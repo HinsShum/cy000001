@@ -29,7 +29,7 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
 endif()
 
 # set linker flags
-set(LINK_SCRIPT_FLAGS "-Wl,--gc-sections,-T${PROJECT_SOURCE_DIR}/config/${BOARD_NAME}/gcc/boot_${BOARD_NAME}.ld")
+set(LINK_SCRIPT_FLAGS "-Wl,--gc-sections,-T${PROJECT_SOURCE_DIR}/config/${BOARD_NAME}/gcc/${BOARD_NAME}.ld")
 set(LINK_MAP_FLAGS "-Wl,-Map,${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref")
 set(LINK_MISC_FLAGS "-fno-exceptions -nostartfiles --specs=nosys.specs")
 set(CMAKE_EXE_LINKER_FLAGS "${LINK_MISC_FLAGS} ${LINK_SCRIPT_FLAGS} ${LINK_MAP_FLAGS}")

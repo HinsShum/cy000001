@@ -61,8 +61,7 @@ file(GLOB_RECURSE INCLUDES "*.h")
 dirname(INCLUDES G_SOURCE_INCLUDE_DIRS)
 set(G_SOURCE_INCLUDE_DIRS ${G_SOURCE_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
 
-#set include path and target c file pathname
-
+#set target c file pathname
 set(C_SOURCE_FILES)
 # set project lib
 set(C_SOURCE_LIBS)
@@ -75,7 +74,7 @@ if("${BOARD_NAME}" STREQUAL "CY000001")
 endif()
 # add_subdirectory(components)
 add_subdirectory(driver)
-# add_subdirectory(src)
+add_subdirectory(src)
 # add_subdirectory(utils)
 
 # tell cmake asm file also is c file

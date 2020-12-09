@@ -116,16 +116,16 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /* USER CODE BEGIN 1 */
-void USART1_IRQHandler(void)
-{
-    uint8_t data = 0;
+// void USART1_IRQHandler(void)
+// {
+//     uint8_t data = 0;
 
-    if(RESET != LL_USART_IsActiveFlag_ORE(USART1)) {
-        LL_USART_ClearFlag_ORE(USART1);
-    }
-    if(RESET != LL_USART_IsActiveFlag_RXNE(USART1)) {
-        data = LL_USART_ReceiveData8(USART1);
-    }
-}
+//     if(RESET != LL_USART_IsActiveFlag_ORE(USART1)) {
+//         LL_USART_ClearFlag_ORE(USART1);
+//     }
+//     if(RESET != LL_USART_IsActiveFlag_RXNE(USART1)) {
+//         data = LL_USART_ReceiveData8(USART1);
+//     }
+// }
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

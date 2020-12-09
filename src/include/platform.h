@@ -1,9 +1,9 @@
 /**
- * @file /config/CY000001/options.h
+ * @file src/include/platform.h
  *
  * Copyright (C) 2020
  *
- * options.h is free software: you can redistribute it and/or modify
+ * platform.h is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -17,23 +17,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @author HinsShum hinsshum@qq.com
+ *
+ * @encoding utf-8
  */
-#ifndef __RSTF103ZET6_OPTIONS_H
-#define __RSTF103ZET6_OPTIONS_H
+#ifndef __PLATFORM_H
+#define __PLATFORM_H
 
 /*---------- includes ----------*/
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include "stm32f1xx_ll_conf.h"
 
 /*---------- macro ----------*/
-#define SYS_VERSION                             ("V1.00")
-#ifndef SYS_HARD_VERSION
-#define SYS_HARD_VERSION                        ("CY000001")
-#endif
-
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-#endif /* __RSTF103ZET6_OPTIONS_H */
+extern void platform_hw_init(void);
+extern void platform_hw_deinit(void);
+extern int32_t platform_init(void);
+
+#endif /* __PLATFORM_H */

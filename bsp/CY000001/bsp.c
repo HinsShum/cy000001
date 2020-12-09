@@ -21,7 +21,6 @@
 
 /*---------- includes ----------*/
 #include "bsp.h"
-#include "bsp_led.h"
 #include "stm32f1xx_ll_conf.h"
 #include "config/attributes.h"
 
