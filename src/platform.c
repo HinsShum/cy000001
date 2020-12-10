@@ -24,11 +24,16 @@
 /*---------- includes ----------*/
 #include "platform.h"
 #include "bsp.h"
+#include "bsp_led.h"
+#include "led.h"
 #include "config/errorno.h"
 #include "config/options.h"
 
 /*---------- macro ----------*/
 /*---------- variable prototype ----------*/
+extern struct st_device dev_led_ds0;
+extern struct st_device dev_led_ds1;
+
 /*---------- function prototype ----------*/
 /*---------- type define ----------*/
 typedef bool (*init_fnc_t)(void);
@@ -38,11 +43,13 @@ typedef void (*deinit_fnc_t)(void);
 static init_fnc_t init_fnc_sequence[] = {
     bsp_init,
     bsp_systick1ms_init,
+    bsp_led_init,
     NULL
 };
 
 static deinit_fnc_t deinit_fnc_sequence[] = {
     bsp_deinit,
+    bsp_led_deinit,
     NULL
 };
 
@@ -76,6 +83,11 @@ static int32_t platform_misc_init(void)
 
 static int32_t platform_driver_init(void)
 {
+    uint32_t led_blink = 500;
+
+    /* set ds0 led blinking every 500ms */
+    device_ioctl(&dev_led_ds0, DEVICE_IOCTL_LED_SET_BLINK_TIME, (void *)&led_blink);
+
     return CY_EOK;
 }
 

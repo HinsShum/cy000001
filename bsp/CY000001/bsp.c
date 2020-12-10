@@ -119,6 +119,7 @@ uint32_t HAL_GetTick(void)
  */
 void bsp_systick_isr(void)
 {
+    HAL_IncTick();
 }
 
 /**

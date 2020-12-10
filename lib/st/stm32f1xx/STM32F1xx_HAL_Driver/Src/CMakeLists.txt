@@ -7,9 +7,11 @@
 cmake_minimum_required(VERSION 3.1)
 
 set(C_SOURCE_FILES "stm32f1xx_ll_utils.c;stm32f1xx_ll_rcc.c;stm32f1xx_ll_gpio.c")
+set(TARGET_INCLUDE ${G_SOURCE_INCLUDE_DIRS} "../Inc")
 set(TARGET_LIB_NAME stlib)
 
 add_library(${TARGET_LIB_NAME} STATIC ${C_SOURCE_FILES})
 set(C_SOURCE_LIBS "${C_SOURCE_LIBS};${TARGET_LIB_NAME}" PARENT_SCOPE)
+set(G_SOURCE_INCLUDE_DIRS ${G_SOURCE_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/../Inc" PARENT_SCOPE)
 
-target_include_directories(${TARGET_LIB_NAME} PRIVATE ${G_SOURCE_INCLUDE_DIRS})
+target_include_directories(${TARGET_LIB_NAME} PRIVATE ${TARGET_INCLUDE})

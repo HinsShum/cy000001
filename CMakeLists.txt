@@ -57,8 +57,8 @@ function(DIRNAME INPUT OUTPUT)
 endfunction(DIRNAME)
 
 # set global include directory
-file(GLOB_RECURSE INCLUDES "*.h")
-dirname(INCLUDES G_SOURCE_INCLUDE_DIRS)
+# file(GLOB_RECURSE INCLUDES "*.h")
+# dirname(INCLUDES G_SOURCE_INCLUDE_DIRS)
 set(G_SOURCE_INCLUDE_DIRS ${G_SOURCE_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
 
 #set target c file pathname

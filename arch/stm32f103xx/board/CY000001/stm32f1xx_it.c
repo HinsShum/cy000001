@@ -20,14 +20,19 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_it.h"
-#include "bsp.h"
 #include "stm32f1xx_ll_conf.h"
 
 /* Private includes ----------------------------------------------------------*/
+#include "bsp.h"
+#include "led.h"
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+extern struct st_device dev_led_ds0;
+extern struct st_device dev_led_ds1;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private user code ---------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
@@ -104,8 +109,15 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-    HAL_IncTick();
     bsp_systick_isr();
+    {
+        /* led ds0 as the sys led to indicate that the device is still alive */
+        uint32_t led_blink = 0;
+        device_ioctl(&dev_led_ds0, DEVICE_IOCTL_LED_GET_BLINK_TIME, &led_blink);
+        if(led_blink && !(HAL_GetTick() % led_blink)) {
+            device_ioctl(&dev_led_ds0, DEVICE_IOCTL_LED_TOGGLE, NULL);
+        }
+    }
 }
 
 /******************************************************************************/
