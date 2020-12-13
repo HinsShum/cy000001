@@ -25,7 +25,9 @@
 #include "platform.h"
 #include "bsp.h"
 #include "bsp_led.h"
+#include "bsp_print.h"
 #include "led.h"
+#include "printk.h"
 #include "config/errorno.h"
 #include "config/options.h"
 
@@ -44,13 +46,30 @@ static init_fnc_t init_fnc_sequence[] = {
     bsp_init,
     bsp_systick1ms_init,
     bsp_led_init,
+    bsp_print_init,
     NULL
 };
 
 static deinit_fnc_t deinit_fnc_sequence[] = {
     bsp_deinit,
     bsp_led_deinit,
+    bsp_print_deinit,
     NULL
+};
+
+/* logo and copyright
+ */
+static const char *copyright_notice[] =
+{
+    " ",
+    "============================================================",
+    "=  (C) COPYRIGHT 2020 Sluan                                =",
+    "=                                                          =",
+    "=  Program Information:                                    =",
+    "=     CY000001 Application                                 =",
+    "=                                              By HinsShum =",
+    "============================================================",
+    "\0"
 };
 
 /*---------- function ----------*/
@@ -76,8 +95,18 @@ static void platform_peripherals_deinit(void)
     }
 }
 
+static void platform_sayhello(void)
+{
+    /* print copyright */
+    for(const char **pcopyright = copyright_notice; **pcopyright != 0; pcopyright++) {
+        printk(KERN_INFO "%s\n", (const char *)*pcopyright);
+    }
+}
+
 static int32_t platform_misc_init(void)
 {
+    platform_sayhello();
+
     return CY_EOK;
 }
 
@@ -87,6 +116,7 @@ static int32_t platform_driver_init(void)
 
     /* set ds0 led blinking every 500ms */
     device_ioctl(&dev_led_ds0, DEVICE_IOCTL_LED_SET_BLINK_TIME, (void *)&led_blink);
+    console_driver_init();
 
     return CY_EOK;
 }
