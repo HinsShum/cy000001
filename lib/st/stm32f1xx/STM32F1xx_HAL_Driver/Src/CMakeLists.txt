@@ -6,7 +6,7 @@
 #        which is the required name of the file CMake looks for:
 cmake_minimum_required(VERSION 3.1)
 
-set(C_SOURCE_FILES "stm32f1xx_ll_utils.c;stm32f1xx_ll_rcc.c;stm32f1xx_ll_gpio.c;stm32f1xx_ll_usart.c")
+set(C_SOURCE_FILES "stm32f1xx_ll_utils.c;stm32f1xx_ll_rcc.c;stm32f1xx_ll_gpio.c;stm32f1xx_ll_usart.c;stm32f1xx_ll_spi.c")
 set(TARGET_INCLUDE ${G_SOURCE_INCLUDE_DIRS} "../Inc")
 set(TARGET_LIB_NAME stlib)
 
