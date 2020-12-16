@@ -20,8 +20,8 @@
  *
  * @encoding utf-8
  */
-#ifndef __LWIP_OPTS_H
-#define __LWIP_OPTS_H
+#ifndef __LWIPOPTS_H
+#define __LWIPOPTS_H
 
 /*---------- includes ----------*/
 #include <stdint.h>
@@ -29,7 +29,40 @@
 #include <stddef.h>
 
 /*---------- macro ----------*/
+/* no sys arch
+ */
+#define NO_SYS                  1
+
+/* define whether compile sockt API and sequential API
+ */
+#define LWIP_SOCKET             0
+#define LWIP_NETCONN            0
+
+/* define align bytes
+ */
+#define MEM_ALIGNMENT           4
+
+/* define lwip internal heap size
+ */ 
+#define MEM_SIZE                1024 * 30
+
+/* define lwip tcp send buffer maximum size
+ */
+#define TCP_SND_BUF             4000
+
+/* define TCP message maximum size
+ */
+#define TCP_MSS                 1000
+
+/* define whether allow lwip print arp debug information
+ */
+#define ETHARP_DEBUG            LWIP_DBG_ON
+
+/* define whether allow lwip print icmp debug information
+ */
+#define ICMP_DEBUG              LWIP_DBG_ON
+
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-#endif /* __LWIP_OPTS_H */
+#endif /* __LWIPOPTS_H */

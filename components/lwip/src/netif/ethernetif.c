@@ -45,7 +45,7 @@
 
 #include "lwip/opt.h"
 
-#if 0 /* don't build, this is only a skeleton, see previous comment */
+#if 1 /* don't build, this is only a skeleton, see previous comment */
 
 #include "lwip/def.h"
 #include "lwip/mem.h"
@@ -54,6 +54,9 @@
 #include <lwip/snmp.h>
 #include "netif/etharp.h"
 #include "netif/ppp_oe.h"
+
+#include "enc28j60.h"
+#include <string.h>
 
 /* Define those to better describe your network interface. */
 #define IFNAME0 'e'
@@ -71,7 +74,96 @@ struct ethernetif {
 };
 
 /* Forward declarations. */
-static void  ethernetif_input(struct netif *netif);
+static int ethernetif_input(struct netif *netif);
+extern struct netif enc28j60_netif;
+
+/* Mac address
+ */
+static unsigned char MyMacID[] = {0x04, 0x02, 0x35, 0x00, 0x00, 0x01};
+
+/****************************************************************************
+* 名    称：void PacketSend (struct pbuf *p)
+* 功    能：发送一包数据	完成pbuf中数据的发送																	 
+* 入口参数：
+* 出口参数: 
+* 说    明：基于uip的驱动程序完成LwIP的数据包发送和接收
+* 调用方法：将pbuf中的数据拷贝到全局数组MyDatabuf中，然后调用上面的函数enc28j60PacketSend发送数据
+****************************************************************************/ 
+//以太网数据帧的最大长度1500，定义这个数组会增大内存开销，但是驱动程序变得简单
+static unsigned char MySendbuf[1500]; 
+static err_t PacketSend (struct pbuf *p)
+{
+  struct pbuf *q = NULL;
+  unsigned int templen = 0;
+
+  for(q = p;q!=NULL;q = q->next)
+  {
+    memcpy(&MySendbuf[templen],q->payload,q->len);	 //将pbuf中的数据拷贝到全局数组MyDatabuf中
+    templen += 	q->len ;
+
+    if(templen > 1500 || templen > p->tot_len)	 	//有效性校验，防止数据溢出
+    {
+      LWIP_PLATFORM_DIAG(("PacketSend: error,tmplen=%"U32_F",tot_len=%"U32_F"\n\t", templen, p->tot_len));
+      return ERR_BUF;
+    }
+  }
+  
+  //拷贝完毕，下面进行数据的发送工作
+  if(templen == p->tot_len)
+  {
+    enc28j60PacketSend(templen, MySendbuf);		   //调用网卡发送函数
+    return ERR_OK; 
+  }
+  
+  LWIP_PLATFORM_DIAG(("PacketSend: length mismatch ,tmplen=%"U32_F",tot_len=%"U32_F"\n\t", templen, p->tot_len));
+  return ERR_BUF;
+}
+
+/****************************************************************************
+* 名    称：struct pbuf *PacketReceive(struct netif *netif)
+* 功    能：完成LwIP需要的数据包接收																	 
+* 入口参数：
+* 出口参数: 
+* 说    明：基于uip的驱动程序完成LwIP的数据包发送和接收
+* 调用方法：网卡的数据拷贝到全局数组MyRecvbuf中，再组装成pbuf
+****************************************************************************/ 
+//以太网数据帧的最大长度1500，定义这个数组会增大内存开销，但是驱动程序变得简单
+static unsigned char  MyRecvbuf[1500]; 
+struct pbuf *PacketReceive(struct netif *netif)
+{
+  struct pbuf *p = NULL;	
+  unsigned int recvlen = 0;
+  unsigned int i = 0;
+  struct pbuf *q = NULL;
+    
+  recvlen = enc28j60PacketReceive(1500, MyRecvbuf);
+
+  if(!recvlen)	       //接收数据长度为0，直接返回空
+  {
+      return NULL;
+  }
+  
+  //申请内核pbuf空间，为RAM类型
+  p = pbuf_alloc(PBUF_RAW, recvlen, PBUF_RAM);
+  
+  if(!p)			       //申请失败，则返回空
+  {
+      LWIP_PLATFORM_DIAG(("PacketReceive: pbuf_alloc fail ,len=%"U32_F"\n\t", recvlen));
+    return NULL;
+   }
+    //申请成功，拷贝数据到pbuf中
+  q = p;
+    
+  while(q != NULL)
+  {   
+    memcpy(q->payload,&MyRecvbuf[i],q->len);
+    i += q->len;
+    q = q->next;
+    if(i >= recvlen)  break;
+  }
+    
+  return p;
+}
 
 /**
  * In this function, the hardware should be initialized.
@@ -83,15 +175,16 @@ static void  ethernetif_input(struct netif *netif);
 static void
 low_level_init(struct netif *netif)
 {
-  struct ethernetif *ethernetif = netif->state;
+  // struct ethernetif *ethernetif = netif->state;
   
   /* set MAC hardware address length */
   netif->hwaddr_len = ETHARP_HWADDR_LEN;
 
   /* set MAC hardware address */
-  netif->hwaddr[0] = ;
-  ...
-  netif->hwaddr[5] = ;
+  memcpy((void *)netif->hwaddr, (void *)MyMacID, NETIF_MAX_HWADDR_LEN);
+  // netif->hwaddr[0] = ;
+  // ...
+  // netif->hwaddr[5] = ;
 
   /* maximum transfer unit */
   netif->mtu = 1500;
@@ -100,7 +193,8 @@ low_level_init(struct netif *netif)
   /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
  
-  /* Do whatever else is needed to initialize interface. */  
+  /* Do whatever else is needed to initialize interface. */
+  mymacinit(MyMacID);
 }
 
 /**
@@ -118,35 +212,10 @@ low_level_init(struct netif *netif)
  *       to become availale since the stack doesn't retry to send a packet
  *       dropped because of memory failure (except for the TCP timers).
  */
-
 static err_t
 low_level_output(struct netif *netif, struct pbuf *p)
 {
-  struct ethernetif *ethernetif = netif->state;
-  struct pbuf *q;
-
-  initiate transfer();
-  
-#if ETH_PAD_SIZE
-  pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
-#endif
-
-  for(q = p; q != NULL; q = q->next) {
-    /* Send the data from the pbuf to the interface, one pbuf at a
-       time. The size of the data in each pbuf is kept in the ->len
-       variable. */
-    send data from(q->payload, q->len);
-  }
-
-  signal that packet should be sent();
-
-#if ETH_PAD_SIZE
-  pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
-#endif
-  
-  LINK_STATS_INC(link.xmit);
-
-  return ERR_OK;
+  return PacketSend(p);
 }
 
 /**
@@ -160,54 +229,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
 static struct pbuf *
 low_level_input(struct netif *netif)
 {
-  struct ethernetif *ethernetif = netif->state;
-  struct pbuf *p, *q;
-  u16_t len;
-
-  /* Obtain the size of the packet and put it into the "len"
-     variable. */
-  len = ;
-
-#if ETH_PAD_SIZE
-  len += ETH_PAD_SIZE; /* allow room for Ethernet padding */
-#endif
-
-  /* We allocate a pbuf chain of pbufs from the pool. */
-  p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
-  
-  if (p != NULL) {
-
-#if ETH_PAD_SIZE
-    pbuf_header(p, -ETH_PAD_SIZE); /* drop the padding word */
-#endif
-
-    /* We iterate over the pbuf chain until we have read the entire
-     * packet into the pbuf. */
-    for(q = p; q != NULL; q = q->next) {
-      /* Read enough bytes to fill this pbuf in the chain. The
-       * available data in the pbuf is given by the q->len
-       * variable.
-       * This does not necessarily have to be a memcpy, you can also preallocate
-       * pbufs for a DMA-enabled MAC and after receiving truncate it to the
-       * actually received size. In this case, ensure the tot_len member of the
-       * pbuf is the sum of the chained pbuf len members.
-       */
-      read data into(q->payload, q->len);
-    }
-    acknowledge that packet has been read();
-
-#if ETH_PAD_SIZE
-    pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
-#endif
-
-    LINK_STATS_INC(link.recv);
-  } else {
-    drop packet();
-    LINK_STATS_INC(link.memerr);
-    LINK_STATS_INC(link.drop);
-  }
-
-  return p;  
+  return PacketReceive(netif);
 }
 
 /**
@@ -219,19 +241,18 @@ low_level_input(struct netif *netif)
  *
  * @param netif the lwip network interface structure for this ethernetif
  */
-static void
+static int
 ethernetif_input(struct netif *netif)
 {
-  struct ethernetif *ethernetif;
+  // struct ethernetif *ethernetif;
   struct eth_hdr *ethhdr;
   struct pbuf *p;
 
-  ethernetif = netif->state;
-
+  // ethernetif = netif->state;
   /* move received packet into a new pbuf */
   p = low_level_input(netif);
   /* no packet could be read, silently ignore this */
-  if (p == NULL) return;
+  if (p == NULL) return 0;
   /* points to packet payload, which starts with an Ethernet header */
   ethhdr = p->payload;
 
@@ -257,6 +278,18 @@ ethernetif_input(struct netif *netif)
     p = NULL;
     break;
   }
+
+  return 1;
+}
+
+void process_mac(void)
+{
+   s32_t ret = 0;
+   do
+   {
+       ret = ethernetif_input(&enc28j60_netif);
+
+   }while(ret);
 }
 
 /**

@@ -1,14 +1,13 @@
 #include "enc28j60.h"
- 
-#include <stdio.h>
+ #include <stdio.h>
 
 static struct st_enc28j60_describe *penc28j60;
 
 static unsigned char Enc28j60Bank;
 static unsigned int NextPacketPtr;
 
-extern unsigned char	SPI1_ReadWrite(unsigned char writedat);
-extern void USART_OUT(USART_TypeDef* USARTx, uint8_t *Data,...);
+// extern unsigned char	SPI1_ReadWrite(unsigned char writedat);
+// extern void USART_OUT(USART_TypeDef* USARTx, uint8_t *Data,...);
 
 static void __enc28j60_cs_ctrl(bool on)
 {
@@ -95,7 +94,8 @@ void enc28j60ReadBuffer(unsigned int len, unsigned char* data)
 	// ENC28J60_CSL();
 	__enc28j60_cs_ctrl(true);
 	// 读命令
-	SPI1_ReadWrite(ENC28J60_READ_BUF_MEM);
+	// SPI1_ReadWrite(ENC28J60_READ_BUF_MEM);
+	__enc28j60_xfer(ENC28J60_READ_BUF_MEM);
 	while(len)
 	{
         len--;
@@ -538,4 +538,6 @@ void mymacinit(unsigned char *mymac)
 int32_t enc28j60_register(struct st_enc28j60_describe *pdes)
 {
     penc28j60 = pdes;
+
+	return 0;
 }

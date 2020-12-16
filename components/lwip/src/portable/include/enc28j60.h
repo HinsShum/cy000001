@@ -1,6 +1,10 @@
 #ifndef __ENC28J60_H
 #define __ENC28J60_H
 
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
 // ENC28J60 Control Registers
 // Control register definitions are a combination of address,
 // bank number, and Ethernet/MAC/PHY indicator bits.
@@ -247,25 +251,26 @@
 
 //SPI1初始化
 //void	ENC28J60_Init(void);
-unsigned char enc28j60ReadOp(unsigned char op, unsigned char address);
-void 	enc28j60WriteOp(unsigned char op, unsigned char address, unsigned char data);
-void 	enc28j60ReadBuffer(unsigned int len, unsigned char* data);
-void 	enc28j60WriteBuffer(unsigned int len, unsigned char* data);
-void 	enc28j60SetBank(unsigned char address);
-unsigned char enc28j60Read(unsigned char address);
-void 	enc28j60Write(unsigned char address, unsigned char data);
-void 	enc28j60PhyWrite(unsigned char address, unsigned int data);
-void 	enc28j60clkout(unsigned char clk);
-void 	enc28j60Init(unsigned char* macaddr);
-unsigned char enc28j60getrev(void);
-void 	enc28j60PacketSend(unsigned int len, unsigned char* packet);
-unsigned int enc28j60PacketReceive(unsigned int maxlen, unsigned char* packet);
-
-extern int32_t enc28j60_register(struct st_enc28j60_describe *pdes);
+extern void mymacinit(unsigned char *mymac);
+extern unsigned char enc28j60ReadOp(unsigned char op, unsigned char address);
+extern void 	enc28j60WriteOp(unsigned char op, unsigned char address, unsigned char data);
+extern void 	enc28j60ReadBuffer(unsigned int len, unsigned char* data);
+extern void 	enc28j60WriteBuffer(unsigned int len, unsigned char* data);
+extern void 	enc28j60SetBank(unsigned char address);
+extern unsigned char enc28j60Read(unsigned char address);
+extern void 	enc28j60Write(unsigned char address, unsigned char data);
+extern void 	enc28j60PhyWrite(unsigned char address, unsigned int data);
+extern void 	enc28j60clkout(unsigned char clk);
+extern void 	enc28j60Init(unsigned char* macaddr);
+extern unsigned char enc28j60getrev(void);
+extern void 	enc28j60PacketSend(unsigned int len, unsigned char* packet);
+extern unsigned int enc28j60PacketReceive(unsigned int maxlen, unsigned char* packet);
 
 struct st_enc28j60_describe {
     uint8_t (*xfer)(uint8_t ch);
     bool (*cs_ctrl)(bool on);
 };
+
+extern int32_t enc28j60_register(struct st_enc28j60_describe *pdes);
 
 #endif

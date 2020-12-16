@@ -63,7 +63,7 @@
 
 /* define machine byte order
  */
-#define BYTE_ORDER_LITTLE_ENDIAN
+#define BYTE_ORDER                      LITTLE_ENDIANLITTLE_ENDIAN
 
 /*---------- type define ----------*/
 /* lwip private data type typedef
@@ -79,10 +79,10 @@ typedef unsigned int mem_ptr_t;
 
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-static inline int sys_now(void)
+static inline u32_t sys_now(void)
 {
     extern uint32_t HAL_GetTick(void);
-    return (int)HAL_GetTick();
+    return (u32_t)HAL_GetTick();
 }
 
 #endif /* __LWIP_CC_H */
