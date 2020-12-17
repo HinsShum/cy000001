@@ -1,5 +1,5 @@
 #include "enc28j60.h"
- #include <stdio.h>
+ #include "printk.h"
 
 static struct st_enc28j60_describe *penc28j60;
 
@@ -367,12 +367,12 @@ void enc28j60Init(unsigned char* macaddr)
 	enc28j60Write(MAADR1, macaddr[4]);
 	enc28j60Write(MAADR0, macaddr[5]);
 	if(enc28j60Read(MAADR5)== macaddr[0]){
-//		printf("MAADR5 = %x\r\n", enc28j60Read(MAADR5));
-//		printf("MAADR4 = %x\r\n", enc28j60Read(MAADR4));
-//		printf("MAADR3 = %x\r\n", enc28j60Read(MAADR3));
-//		printf("MAADR2 = %x\r\n", enc28j60Read(MAADR2));
-//		printf("MAADR1 = %x\r\n", enc28j60Read(MAADR1));
-//		printf("MAADR0 = %x\r\n", enc28j60Read(MAADR0));
+		printk("MAADR5 = %02x\r\n", enc28j60Read(MAADR5));
+		printk("MAADR4 = %02x\r\n", enc28j60Read(MAADR4));
+		printk("MAADR3 = %02x\r\n", enc28j60Read(MAADR3));
+		printk("MAADR2 = %02x\r\n", enc28j60Read(MAADR2));
+		printk("MAADR1 = %02x\r\n", enc28j60Read(MAADR1));
+		printk("MAADR0 = %02x\r\n", enc28j60Read(MAADR0));
 	}
 	//配置PHY为全双工  LEDB为拉电流
 	enc28j60PhyWrite(PHCON1, PHCON1_PDPXMD);

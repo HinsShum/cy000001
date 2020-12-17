@@ -28,6 +28,8 @@
 /*---------- macro ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
+extern void lwip_demo_task(void);
+
 /*---------- type define ----------*/
 /*---------- variable ----------*/
 /*---------- function ----------*/
@@ -38,7 +40,6 @@ int main(void)
     platform_hw_init();
     /* initialize platform code */
     platform_init();
-
-    while(true) {
-    }
+    /* not return */
+    lwip_demo_task();
 }

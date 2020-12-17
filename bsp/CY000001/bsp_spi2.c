@@ -24,14 +24,14 @@
 /*---------- includes ----------*/
 #include "bsp_spi2.h"
 #include "stm32f1xx_ll_conf.h"
-// #include "enc28j60.h"
+#include "enc28j60.h"
 
 /*---------- macro ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
 /*---------- type define ----------*/
 /*---------- variable ----------*/
-// static struct st_enc28j60_describe m_enc28j60;
+static struct st_enc28j60_describe m_enc28j60;
 
 /*---------- function ----------*/
 static void bsp_spi2_io_init(void)
@@ -39,9 +39,9 @@ static void bsp_spi2_io_init(void)
     LL_GPIO_InitTypeDef gpio_init_structure = {0};
 
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOB);
-    while(LL_APB2_GRP1_IsEnabledClock(LL_APB2_GRP1_PERIPH_GPIOB));
+    while(true != LL_APB2_GRP1_IsEnabledClock(LL_APB2_GRP1_PERIPH_GPIOB));
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOD);
-    while(LL_APB2_GRP1_IsEnabledClock(LL_APB2_GRP1_PERIPH_GPIOD));
+    while(true != LL_APB2_GRP1_IsEnabledClock(LL_APB2_GRP1_PERIPH_GPIOD));
 
     /* GPIO configure
      * CS   ---> PD8
@@ -84,33 +84,33 @@ static void bsp_spi2_reg_init(void)
     LL_SPI_Enable(SPI2);
 }
 
-// static uint8_t bsp_spi2_xfer(uint8_t ch)
-// {
-//     while(true != LL_SPI_IsActiveFlag_TXE(SPI2));
-//     LL_SPI_TransmitData8(SPI2, ch);
-//     while(true != LL_SPI_IsActiveFlag_RXNE(SPI2));
-//     return LL_SPI_ReceiveData8(SPI2);
-// }
+static uint8_t bsp_spi2_xfer(uint8_t ch)
+{
+    while(true != LL_SPI_IsActiveFlag_TXE(SPI2));
+    LL_SPI_TransmitData8(SPI2, ch);
+    while(true != LL_SPI_IsActiveFlag_RXNE(SPI2));
+    return LL_SPI_ReceiveData8(SPI2);
+}
 
-// static bool bsp_spi2_cs_ctl(bool on)
-// {
-//     if(on) {
-//         LL_GPIO_ResetOutputPin(GPIOD, LL_GPIO_PIN_8);
-//     } else {
-//         LL_GPIO_SetOutputPin(GPIOD, LL_GPIO_PIN_8);
-//     }
+static bool bsp_spi2_cs_ctl(bool on)
+{
+    if(on) {
+        LL_GPIO_ResetOutputPin(GPIOD, LL_GPIO_PIN_8);
+    } else {
+        LL_GPIO_SetOutputPin(GPIOD, LL_GPIO_PIN_8);
+    }
 
-//     return true;
-// }
+    return true;
+}
 
 bool bsp_spi2_init(void)
 {
     bsp_spi2_io_init();
     bsp_spi2_reg_init();
 
-    // m_enc28j60.xfer = bsp_spi2_xfer;
-    // m_enc28j60.cs_ctrl = bsp_spi2_cs_ctl;
-    // enc28j60_register(&m_enc28j60);
+    m_enc28j60.xfer = bsp_spi2_xfer;
+    m_enc28j60.cs_ctrl = bsp_spi2_cs_ctl;
+    enc28j60_register(&m_enc28j60);
 
     return true;
 }

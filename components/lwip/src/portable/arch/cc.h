@@ -63,7 +63,7 @@
 
 /* define machine byte order
  */
-#define BYTE_ORDER                      LITTLE_ENDIANLITTLE_ENDIAN
+#define BYTE_ORDER                      LITTLE_ENDIAN
 
 /*---------- type define ----------*/
 /* lwip private data type typedef
