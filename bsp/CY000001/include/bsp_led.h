@@ -32,7 +32,4 @@
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-extern bool bsp_led_init(void);
-extern void bsp_led_deinit(void);
-
 #endif /* __BSP_LED_H */

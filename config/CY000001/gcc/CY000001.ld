@@ -121,6 +121,12 @@ SECTIONS
     _sdata = .;        /* create a global symbol at data start */
     *(.data)           /* .data sections */
     *(.data*)          /* .data* sections */
+    _sdev = .;
+    KEEP (*(.dev_defined))
+    _edev = .;
+    _sdrv = .;
+    KEEP (*(.drv_defined))
+    _edrv = .;
 
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */

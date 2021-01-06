@@ -21,7 +21,9 @@
 
 /*---------- includes ----------*/
 #include "device.h"
+#include "driver.h"
 #include "config/errorno.h"
+#include <string.h>
 
 /*---------- macro ----------*/
 /*---------- variable prototype ----------*/
@@ -29,79 +31,82 @@
 /*---------- type define ----------*/
 /*---------- variable ----------*/
 /*---------- function ----------*/
-/**
- * @brief call the device initial function
- * @param device: device abstract variable
- *
- * @retval errorno
- */
-int32_t device_init(struct st_device *device)
+void *device_open(char *name)
+{
+    extern device_t _sdev;
+    extern device_t _edev;
+    device_t *dev = NULL;
+
+    for(dev = &_sdev; dev < &_edev; ++dev) {
+        if(!strncmp(name, dev->dev_name, sizeof(dev->dev_name))) {
+            dev->count++;
+            if(!__device_attrib_isstart(dev->attribute)) {
+                if(dev->pdrv && ((driver_t *)dev->pdrv)->open) {
+                    ((driver_t *)dev->pdrv)->open((driver_t **)(&dev->pdrv));
+                }
+                __device_attrib_setstart(dev->attribute, DEVICE_ATTRIB_START);
+            }
+            break;
+        }
+    }
+
+    return (dev == &_edev) ? NULL : dev;
+}
+
+void device_close(device_t *dev)
+{
+    if(dev->count) {
+        dev->count--;
+    }
+    if(!dev->count) {
+        if(__device_attrib_isstart(dev->attribute)) {
+            if(dev && dev->pdrv && ((driver_t *)dev->pdrv)->close) {
+                ((driver_t *)dev->pdrv)->close((driver_t **)(&dev->pdrv));
+            }
+            __device_attrib_setstart(dev->attribute, DEVICE_ATTRIB_IDLE);
+        }
+    }
+}
+
+int32_t device_write(device_t *dev, void *buf, uint32_t addition, uint32_t len)
 {
     int32_t retval = CY_E_POINT_NONE;
 
-    if(NULL != device && NULL != device->init) {
-        retval = device->init(device);
+    if(dev && dev->pdrv && ((driver_t *)dev->pdrv)->write) {
+        retval = ((driver_t *)dev->pdrv)->write((driver_t **)(&dev->pdrv), buf, addition, len);
     }
 
     return retval;
 }
 
-/**
- * @brief call the device read functions
- * @param device: device abstract variable
- * @param buf: store the data read from the device
- * @param addition: additional variable
- * @param len: the buffer length
- *
- * @retval errorno
- */
-int32_t device_read(struct st_device *device, void *buf,
-                    uint32_t addition, uint32_t len)
+int32_t device_read(device_t *dev, void *buf, uint32_t addition, uint32_t len)
 {
     int32_t retval = CY_E_POINT_NONE;
 
-    if(NULL != device && NULL != device->read) {
-        retval = device->read(device, buf, addition, len);
+    if(dev && dev->pdrv && ((driver_t *)dev->pdrv)->read) {
+        retval = ((driver_t *)dev->pdrv)->read((driver_t **)(&dev->pdrv), buf, addition, len);
     }
 
     return retval;
 }
 
-/**
- * @brief call the device write functions
- * @param device: device abstract variable
- * @param buf: store the data to be written to the device
- * @param addition: additional vaiables
- * @param len: the buffer length
- *
- * @retval errorno
- */
-int32_t device_write(struct st_device *device, void *buf,
-                     uint32_t addition, uint32_t len)
+int32_t device_ioctl(device_t *dev, uint32_t cmd, void *args)
 {
     int32_t retval = CY_E_POINT_NONE;
 
-    if(NULL != device && NULL != device->write) {
-        retval = device->write(device, buf, addition, len);
+    if(dev && dev->pdrv && ((driver_t *)dev->pdrv)->ioctl) {
+        retval = ((driver_t *)dev->pdrv)->ioctl((driver_t **)(&dev->pdrv), cmd, args);
     }
 
     return retval;
 }
 
-/**
- * @brief call the device ioctl functions
- * @param device: device abstract variable
- * @param cmd: ioctl command type
- * @param arg: ioctl command argument
- *
- * @retval errorno
- */
-int32_t device_ioctl(struct st_device *device, uint32_t cmd, void *arg)
+int32_t device_irq_process(device_t *dev, uint32_t irq_handler, void *args)
 {
     int32_t retval = CY_E_POINT_NONE;
 
-    if(NULL != device && NULL != device->ioctl) {
-        retval = device->ioctl(device, cmd, arg);
+    if(dev && dev->pdrv && ((driver_t *)dev->pdrv)->irq_handler) {
+        retval = ((driver_t *)dev->pdrv)->irq_handler((driver_t **)(&dev->pdrv), irq_handler, args);
     }
 
     return retval;

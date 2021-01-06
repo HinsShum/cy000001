@@ -23,6 +23,8 @@
 #include "led.h"
 #include "config/errorno.h"
 #include "config/assert.h"
+#include "driver.h"
+#include "device.h"
 
 /*---------- macro ----------*/
 /*---------- variable prototype ----------*/
@@ -30,40 +32,63 @@
 /*---------- type define ----------*/
 /*---------- variable ----------*/
 /*---------- function ----------*/
-static int32_t led_ioctl(struct st_device *pdev, uint32_t cmd, void *arg)
+static int32_t led_open(driver_t **pdrv)
 {
-    struct st_led_describe *pled = NULL;
+    struct st_led_describe *pdesc = NULL;
     int32_t retval = CY_EOK;
 
-    assert(pdev);
-    assert(pdev->user);
+    assert(pdrv);
+    pdesc = container_of(pdrv, device_t, pdrv)->pdesc;
+    if(pdesc && pdesc->init) {
+        pdesc->init();
+    }
 
-    pled = (struct st_led_describe *)pdev->user;
+    return retval;
+}
 
+static void led_close(driver_t **pdrv)
+{
+    struct st_led_describe *pdesc = NULL;
+
+    assert(pdrv);
+    pdesc = container_of(pdrv, device_t, pdrv)->pdesc;
+    if(pdesc && pdesc->deinit) {
+        pdesc->deinit();
+    }
+}
+
+static int32_t led_ioctl(driver_t **pdrv, uint32_t cmd, void *arg)
+{
+    struct st_led_describe *pdesc = NULL;
+    int32_t retval = CY_EOK;
+
+    assert(pdrv);
+
+    pdesc = container_of(pdrv, device_t, pdrv)->pdesc;
     switch(cmd) {
         case DEVICE_IOCTL_LED_ON:
-            if(pled->ctrl) {
-                pled->ctrl(true);
+            if(pdesc->ctrl) {
+                pdesc->ctrl(true);
             }
             break;
         case DEVICE_IOCTL_LED_OFF:
-            if(pled->ctrl) {
-                pled->ctrl(false);
+            if(pdesc->ctrl) {
+                pdesc->ctrl(false);
             }
             break;
         case DEVICE_IOCTL_LED_TOGGLE:
-            if(pled->toggle) {
-                pled->toggle();
+            if(pdesc->toggle) {
+                pdesc->toggle();
             }
             break;
         case DEVICE_IOCTL_LED_SET_BLINK_TIME:
             if(arg) {
-                pled->blink_time = *(uint32_t *)arg;
+                pdesc->blink_time = *(uint32_t *)arg;
             }
             break;
         case DEVICE_IOCTL_LED_GET_BLINK_TIME:
             if(arg) {
-                *(uint32_t *)arg = pled->blink_time;
+                *(uint32_t *)arg = pdesc->blink_time;
             }
             break;
         default:
@@ -74,17 +99,4 @@ static int32_t led_ioctl(struct st_device *pdev, uint32_t cmd, void *arg)
     return retval;
 }
 
-int32_t led_register(struct st_device *pdev, struct st_led_describe *pled)
-{
-    assert(pdev);
-    assert(pled);
-
-    pdev->attrib = 0;
-    pdev->init = NULL;
-    pdev->write = NULL;
-    pdev->read = NULL;
-    pdev->ioctl = led_ioctl;
-    pdev->user = (void *)pled;
-
-    return CY_EOK;
-}
+DRIVER_DEFINED(led, led_open, led_close, NULL, NULL, led_ioctl, NULL);

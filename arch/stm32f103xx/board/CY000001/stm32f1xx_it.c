@@ -30,9 +30,6 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-extern struct st_device dev_led_ds0;
-extern struct st_device dev_led_ds1;
-
 /* Private function prototypes -----------------------------------------------*/
 /* Private user code ---------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
@@ -113,9 +110,12 @@ void SysTick_Handler(void)
     {
         /* led ds0 as the sys led to indicate that the device is still alive */
         uint32_t led_blink = 0;
-        device_ioctl(&dev_led_ds0, DEVICE_IOCTL_LED_GET_BLINK_TIME, &led_blink);
-        if(led_blink && !(HAL_GetTick() % led_blink)) {
-            device_ioctl(&dev_led_ds0, DEVICE_IOCTL_LED_TOGGLE, NULL);
+        extern void *dev_led_ds0;
+        if(dev_led_ds0) {
+          device_ioctl(dev_led_ds0, DEVICE_IOCTL_LED_GET_BLINK_TIME, &led_blink);
+          if(led_blink && !(HAL_GetTick() % led_blink)) {
+            device_ioctl(dev_led_ds0, DEVICE_IOCTL_LED_TOGGLE, NULL);
+          }
         }
     }
 }

@@ -27,29 +27,16 @@
 #include <stddef.h>
 
 /*---------- macro ----------*/
-//! define the device type
-//! @option tiny, no mutex, no name
-//! @option min, have mutex, name
-//! @option full, have device list and register and find functions
-#define DEVICE_TYPE_TINY                (0x01)
-#define DEVICE_TYPE_MIN                 (0x02)
-#define DEVICE_TYPE_FULL                (0x03)
-
-//! @option device type
-#ifndef DEVICE_TYPE
-#define DEVICE_TYPE                     DEVICE_TYPE_TINY
-#endif
-
 //! @option define of the command type
-#define IOCTL_USER_START                (0X80000000)
-#define IOCTL_DEVICE_POWER_ON           (0x00001000)
-#define IOCTL_DEVICE_POWER_OFF          (0x00001001)
+#define IOCTL_USER_START                        (0X80000000)
+#define IOCTL_DEVICE_POWER_ON                   (0x00001000)
+#define IOCTL_DEVICE_POWER_OFF                  (0x00001001)
 
 //! @option define the device attribute
-#define DEVICE_ATTRIB_IDLE              (0x00)
-#define DEVICE_ATTRIB_START             (0x01)
-#define DEVICE_ATTRIB_POWER_OFF         (0x0 << 4U)
-#define DEVICE_ATTRIB_POWER_ON          (0x1 << 4U)
+#define DEVICE_ATTRIB_IDLE                      (0x00)
+#define DEVICE_ATTRIB_START                     (0x01)
+#define DEVICE_ATTRIB_POWER_OFF                 (0x0 << 4U)
+#define DEVICE_ATTRIB_POWER_ON                  (0x1 << 4U)
 
 //! @option define the method to operate the attribute
 #define __device_attrib_ispower(attrib)         ((attrib & 0xF0) == DEVICE_ATTRIB_POWER_ON)
@@ -57,30 +44,27 @@
 #define __device_attrib_setpower(attrib, power) (attrib = (attrib & (~0xF0)) | power)
 #define __device_attrib_setstart(attrib, start) (attrib = (attrib & (~0x0F)) | start)
 
+#define DEVICE_DEFINED(dev_name, drv_name, desc) \
+        static device_t device_##dev_name __attribute__((used, section(".dev_defined"))) \
+        = {#dev_name, #drv_name, 0, 0, NULL, desc}
+
 /*---------- type define ----------*/
-struct st_device {
-#if DEVICE_TYPE == DEVICE_TYPE_FULL
-    // add list struct here
-#endif
-#if DEVICE_TYPE > DEVICE_TYPE_TINY
-    // name
-    char name[8];
-    // mutex lock
-#endif
-    uint16_t attrib;
-    int32_t (*init)(struct st_device *device);
-    int32_t (*read)(struct st_device *device, void *buf, uint32_t addition, uint32_t len);
-    int32_t (*write)(struct st_device *device, void *buf, uint32_t addition, uint32_t len);
-    int32_t (*ioctl)(struct st_device *device, uint32_t cmd, void *arg);
-    int32_t (*irq_handler)(struct st_device *device, uint32_t irq_handler, void *arg);
-    void *user;
-};
+typedef struct {
+    char dev_name[10];
+    char drv_name[10];
+    uint16_t attribute;
+    uint32_t count;
+    void *pdrv;
+    void *pdesc;
+} device_t;
 
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-extern int32_t device_init(struct st_device *device);
-extern int32_t device_read(struct st_device *device, void *buf, uint32_t addition, uint32_t len);
-extern int32_t device_write(struct st_device *device, void *buf, uint32_t addition, uint32_t len);
-extern int32_t device_ioctl(struct st_device *device, uint32_t cmd, void *arg);
+extern void *device_open(char *name);
+extern void device_close(device_t *dev);
+extern int32_t device_write(device_t *dev, void *buf, uint32_t addition, uint32_t len);
+extern int32_t device_read(device_t *dev, void *buf, uint32_t addition, uint32_t len);
+extern int32_t device_ioctl(device_t *dev, uint32_t cmd, void *args);
+extern int32_t device_irq_process(device_t *dev, uint32_t irq_handler, void *args);
 
 #endif /* __DEVICE_H */

@@ -1,9 +1,9 @@
 /**
- * @file /driver/inc/led.h
+ * @file driver/driver.c
  *
- * Copyright (C) 2020
+ * Copyright (C) 2021
  *
- * led.h is free software: you can redistribute it and/or modify
+ * driver.c is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -17,32 +17,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @author HinsShum hinsshum@qq.com
+ *
+ * @encoding utf-8
  */
-#ifndef __LED_H
-#define __LED_H
 
 /*---------- includes ----------*/
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
+#include "driver.h"
 #include "device.h"
+#include "config/errorno.h"
+#include <string.h>
 
 /*---------- macro ----------*/
-#define DEVICE_IOCTL_LED_ON             (IOCTL_USER_START + 0x00)
-#define DEVICE_IOCTL_LED_OFF            (IOCTL_USER_START + 0x01)
-#define DEVICE_IOCTL_LED_TOGGLE         (IOCTL_USER_START + 0x02)
-#define DEVICE_IOCTL_LED_SET_BLINK_TIME (IOCTL_USER_START + 0x03)
-#define DEVICE_IOCTL_LED_GET_BLINK_TIME (IOCTL_USER_START + 0x04)
-
-/*---------- type define ----------*/
-struct st_led_describe {
-    uint32_t blink_time; //! unit=ms
-    void (*init)(void);
-    void (*deinit)(void);
-    void (*ctrl)(bool on);
-    void (*toggle)(void);
-};
-
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-#endif /* __LED_H */
+/*---------- type define ----------*/
+/*---------- variable ----------*/
+/*---------- function ----------*/
+int32_t driver_search_device(void)
+{
+    extern driver_t _sdrv;
+    extern driver_t _edrv;
+    extern device_t _sdev;
+    extern device_t _edev;
+
+    driver_t *drv = NULL;
+    device_t *dev = NULL;
+
+    for(dev = &_sdev; dev < &_edev; ++dev) {
+        for(drv = &_sdrv; drv < &_edrv; ++drv) {
+            if(!strncmp(dev->drv_name, drv->drv_name, sizeof(drv->drv_name))) {
+                dev->pdrv = drv;
+            }
+        }
+    }
+
+    return CY_EOK;
+}
