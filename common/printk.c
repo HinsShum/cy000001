@@ -77,7 +77,6 @@ struct con {
     unsigned int (*write)(const char *, unsigned int);
     bool (*getc)(char *);
 };
-static struct con console_driver;
 
 int console_printk[] = {
     DEFAULT_CONSOLE_LOGLEVEL,   /* console_loglevel */
@@ -86,6 +85,7 @@ int console_printk[] = {
 };
 
 #ifdef CONFIG_PRINTK
+static struct con console_driver;
 /**
  * The indices into log_buf are not constrained to log_buf_len - they
  * must be masked before subscripting

@@ -80,7 +80,7 @@ static inline int printk(const char *fmt, ...)
     return 0;
 }
 
-static inline bool console_driver_init(void)
+static inline bool console_driver_init(unsigned int (*write)(const char *, unsigned int))
 {
     return true;
 }
