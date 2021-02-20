@@ -26,12 +26,17 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "stm32f1xx_ll_conf.h"
+#include "cpu.h"
 
 /*---------- macro ----------*/
 #define SYS_VERSION                             ("V1.00")
 #ifndef SYS_HARD_VERSION
 #define SYS_HARD_VERSION                        ("CY000001")
 #endif
+
+/* delay */
+#define __delay_ms(ms)                          mdelay(ms)
+#define __delay_us(us)                          udelay(us)
 
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/

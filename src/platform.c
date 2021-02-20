@@ -23,7 +23,6 @@
 
 /*---------- includes ----------*/
 #include "platform.h"
-#include "bsp.h"
 #include "bsp_print.h"
 #include "bsp_spi2.h"
 #include "led.h"
@@ -41,15 +40,12 @@ typedef void (*deinit_fnc_t)(void);
 
 /*---------- variable ----------*/
 static init_fnc_t init_fnc_sequence[] = {
-    bsp_init,
-    bsp_systick1ms_init,
     bsp_print_init,
     bsp_spi2_init,
     NULL
 };
 
 static deinit_fnc_t deinit_fnc_sequence[] = {
-    bsp_deinit,
     bsp_print_deinit,
     bsp_spi2_deinit,
     NULL

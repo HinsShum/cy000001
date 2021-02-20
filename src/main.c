@@ -22,7 +22,7 @@
  */
 
 /*---------- includes ----------*/
-#include "cpu_freq.h"
+#include "cpu.h"
 #include "platform.h"
 
 /*---------- macro ----------*/
@@ -35,7 +35,7 @@ extern void lwip_demo_task(void);
 /*---------- function ----------*/
 int main(void)
 {
-    cpu_freq_config();
+    cpu_config();
     /* initialize hardware */
     platform_hw_init();
     /* initialize platform code */

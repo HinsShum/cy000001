@@ -29,8 +29,14 @@
 /*---------- macro ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
+static int32_t led_open(driver_t **pdrv);
+static void led_close(driver_t **pdrv);
+static int32_t led_ioctl(driver_t **pdrv, uint32_t cmd, void *arg);
+
 /*---------- type define ----------*/
 /*---------- variable ----------*/
+DRIVER_DEFINED(led, led_open, led_close, NULL, NULL, led_ioctl, NULL);
+
 /*---------- function ----------*/
 static int32_t led_open(driver_t **pdrv)
 {
@@ -98,5 +104,3 @@ static int32_t led_ioctl(driver_t **pdrv, uint32_t cmd, void *arg)
 
     return retval;
 }
-
-DRIVER_DEFINED(led, led_open, led_close, NULL, NULL, led_ioctl, NULL);

@@ -29,12 +29,19 @@
 #include <stddef.h>
 
 /*---------- macro ----------*/
-#define container_of(ptr, type, member) ({ \
-        (type *)((char *)ptr - offsetof(type, member));})
+#undef _DEV_SECTION_PREFIX
+#if defined(__linux__) || defined(_WIN32)
+#define _DEV_SECTION_PREFIX
+#else
+#define _DEV_SECTION_PREFIX                     "."
+#endif
+
+#define container_of(ptr, type, member) ( \
+        (type *)((char *)ptr - offsetof(type, member)))
 
 #define DRIVER_DEFINED(name, open, close, write, read, ioctl, irq_handler) \
-        static driver_t driver_##name __attribute__((used, section(".drv_defined"))) \
-        = {#name, open, close, write, read, ioctl, irq_handler}
+        static driver_t driver_##name __attribute__((used, section(_DEV_SECTION_PREFIX "drv_defined"))) \
+        __attribute__((aligned(4))) = {#name, open, close, write, read, ioctl, irq_handler}
 
 /*---------- type define ----------*/
 typedef struct st_driver {
@@ -44,7 +51,7 @@ typedef struct st_driver {
     int32_t (*write)(struct st_driver **drv, void *buf, uint32_t addition, uint32_t len);
     int32_t (*read)(struct st_driver **drv, void *buf, uint32_t addition, uint32_t len);
     int32_t (*ioctl)(struct st_driver **drv, uint32_t cmd, void *args);
-    int32_t (*irq_handler)(struct st_driver **drv, uint32_t irq_handler, void *args);
+    int32_t (*irq_handler)(struct st_driver **drv, uint32_t irq_handler, void *args, uint32_t len);
 } driver_t;
 
 /*---------- variable prototype ----------*/

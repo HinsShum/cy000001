@@ -1,5 +1,5 @@
 /**
- * @file /driver/inc/device.h
+ * @file driver/include/device.h
  *
  * Copyright (C) 2020
  *
@@ -27,6 +27,13 @@
 #include <stddef.h>
 
 /*---------- macro ----------*/
+#undef _DEV_SECTION_PREFIX
+#if defined(__linux__) || defined(_WIN32)
+#define _DEV_SECTION_PREFIX
+#else
+#define _DEV_SECTION_PREFIX                     "."
+#endif
+
 //! @option define of the command type
 #define IOCTL_USER_START                        (0X80000000)
 #define IOCTL_DEVICE_POWER_ON                   (0x00001000)
@@ -45,8 +52,8 @@
 #define __device_attrib_setstart(attrib, start) (attrib = (attrib & (~0x0F)) | start)
 
 #define DEVICE_DEFINED(dev_name, drv_name, desc) \
-        static device_t device_##dev_name __attribute__((used, section(".dev_defined"))) \
-        = {#dev_name, #drv_name, 0, 0, NULL, desc}
+        static device_t device_##dev_name __attribute__((used, section(_DEV_SECTION_PREFIX "dev_defined"))) \
+        __attribute__((aligned(4))) = {#dev_name, #drv_name, 0, 0, NULL, desc}
 
 /*---------- type define ----------*/
 typedef struct {
@@ -65,6 +72,6 @@ extern void device_close(device_t *dev);
 extern int32_t device_write(device_t *dev, void *buf, uint32_t addition, uint32_t len);
 extern int32_t device_read(device_t *dev, void *buf, uint32_t addition, uint32_t len);
 extern int32_t device_ioctl(device_t *dev, uint32_t cmd, void *args);
-extern int32_t device_irq_process(device_t *dev, uint32_t irq_handler, void *args);
+extern int32_t device_irq_process(device_t *dev, uint32_t irq_handler, void *args, uint32_t len);
 
 #endif /* __DEVICE_H */

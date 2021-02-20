@@ -53,7 +53,7 @@ static struct st_led_describe m_led_ds0 = {
     .ctrl = bsp_led_ds0_ctrl,
     .toggle = bsp_led_ds0_toggle
 };
-
+DEVICE_DEFINED(led_ds0, led, &m_led_ds0);
 static struct st_led_describe m_led_ds1 = {
     .blink_time = 0,
     .init = bsp_led_ds1_io_init,
@@ -61,6 +61,7 @@ static struct st_led_describe m_led_ds1 = {
     .ctrl = bsp_led_ds1_ctrl,
     .toggle = bsp_led_ds1_toggle
 };
+DEVICE_DEFINED(led_ds1, led, &m_led_ds1);
 
 /*---------- function ----------*/
 static void bsp_led_ds0_io_init(void)
@@ -130,6 +131,3 @@ static void bsp_led_ds1_deinit(void)
 {
     LL_GPIO_SetOutputPin(_BSP_LED_DS1_PORT, _BSP_LED_DS1_PIN);
 }
-
-DEVICE_DEFINED(led_ds0, led, &m_led_ds0);
-DEVICE_DEFINED(led_ds1, led, &m_led_ds1);

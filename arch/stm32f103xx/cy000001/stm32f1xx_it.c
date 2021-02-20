@@ -23,7 +23,7 @@
 #include "stm32f1xx_ll_conf.h"
 
 /* Private includes ----------------------------------------------------------*/
-#include "bsp.h"
+#include "cpu.h"
 #include "led.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -106,7 +106,7 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-    bsp_systick_isr();
+    systick_isr();
     {
         /* led ds0 as the sys led to indicate that the device is still alive */
         uint32_t led_blink = 0;
