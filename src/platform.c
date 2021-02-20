@@ -23,8 +23,6 @@
 
 /*---------- includes ----------*/
 #include "platform.h"
-#include "bsp_print.h"
-#include "bsp_spi2.h"
 #include "led.h"
 #include "driver.h"
 #include "printk.h"
@@ -35,21 +33,8 @@
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
 /*---------- type define ----------*/
-typedef bool (*init_fnc_t)(void);
-typedef void (*deinit_fnc_t)(void);
-
 /*---------- variable ----------*/
-static init_fnc_t init_fnc_sequence[] = {
-    bsp_print_init,
-    bsp_spi2_init,
-    NULL
-};
-
-static deinit_fnc_t deinit_fnc_sequence[] = {
-    bsp_print_deinit,
-    bsp_spi2_deinit,
-    NULL
-};
+platform_describe_t g_platform;
 
 /* logo and copyright
  */
@@ -57,42 +42,16 @@ static const char *copyright_notice[] =
 {
     " ",
     "============================================================",
-    "=  (C) COPYRIGHT 2020 Sluan                                =",
+    "=  (C) COPYRIGHT 2021                                      =",
     "=                                                          =",
     "=  Program Information:                                    =",
-    "=     CY000001 Application                                 =",
+    "=     cy000001 Application                                 =",
     "=                                              By HinsShum =",
     "============================================================",
     "\0"
 };
 
-/* define variables for device point
- */
-void *dev_led_ds0 = NULL;
-
 /*---------- function ----------*/
-static void platform_peripherals_init(void)
-{
-    init_fnc_t *init_fnc_ptr = NULL;
-
-    __disable_irq();
-    for(init_fnc_ptr = init_fnc_sequence; NULL != *init_fnc_ptr; ++init_fnc_ptr) {
-        if(true != (*init_fnc_ptr)()) {
-            while(true);    /*<< blocking here, wait watch dog to reset the device */
-        }
-    }
-    __enable_irq();
-}
-
-static void platform_peripherals_deinit(void)
-{
-    deinit_fnc_t *deinit_fnc_ptr = NULL;
-
-    for(deinit_fnc_ptr = deinit_fnc_sequence; NULL != deinit_fnc_ptr; ++deinit_fnc_ptr) {
-        (*deinit_fnc_ptr)();
-    }
-}
-
 static void platform_sayhello(void)
 {
     /* print copyright */
@@ -108,6 +67,11 @@ static int32_t platform_misc_init(void)
     return CY_EOK;
 }
 
+static unsigned int platform_low_level_printk(const char *s, unsigned int len)
+{
+    return device_write(g_platform.handler.dev_printk, (void *)s, 0, len);
+}
+
 static int32_t platform_driver_init(void)
 {
     driver_search_device();
@@ -115,24 +79,17 @@ static int32_t platform_driver_init(void)
     /* set ds0 led blinking every 500ms */
     {
         uint32_t led_blink = 500;
-        dev_led_ds0 = device_open("led_ds0");
-        if(dev_led_ds0) {
-            device_ioctl(dev_led_ds0, DEVICE_IOCTL_LED_SET_BLINK_TIME, (void *)&led_blink);
-        }
+        g_platform.handler.dev_led0 = device_open("led_ds0");
+        assert(g_platform.handler.dev_led0);
+        device_ioctl(g_platform.handler.dev_led0, DEVICE_IOCTL_LED_SET_BLINK_TIME, (void *)&led_blink);
     }
-    console_driver_init();
+    /* open print device */
+    g_platform.handler.dev_printk = device_open("print");
+    assert(g_platform.handler.dev_printk);
+    /* initialize console */
+    console_driver_init(platform_low_level_printk);
 
     return CY_EOK;
-}
-
-void platform_hw_init(void)
-{
-    platform_peripherals_init();
-}
-
-void platform_hw_deinit(void)
-{
-    platform_peripherals_deinit();
 }
 
 int32_t platform_init(void)

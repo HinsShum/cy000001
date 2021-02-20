@@ -1,13 +1,11 @@
 #include "enc28j60.h"
- #include "printk.h"
+#include "bsp_spi2.h"
+#include "printk.h"
 
 static struct st_enc28j60_describe *penc28j60;
 
 static unsigned char Enc28j60Bank;
 static unsigned int NextPacketPtr;
-
-// extern unsigned char	SPI1_ReadWrite(unsigned char writedat);
-// extern void USART_OUT(USART_TypeDef* USARTx, uint8_t *Data,...);
 
 static void __enc28j60_cs_ctrl(bool on)
 {
@@ -39,22 +37,17 @@ unsigned char enc28j60ReadOp(unsigned char op, unsigned char address)
 {
 	unsigned char dat = 0;
 	
-	// ENC28J60_CSL();
 	__enc28j60_cs_ctrl(true);
 	
 	dat = op | (address & ADDR_MASK);
-	// SPI1_ReadWrite(dat);
 	__enc28j60_xfer(dat);
-	// dat = SPI1_ReadWrite(0xFF);
 	dat = __enc28j60_xfer(0xFF);
 	// do dummy read if needed (for mac and mii, see datasheet page 29)
 	if(address & 0x80)
 	{
-		// dat = SPI1_ReadWrite(0xFF);
 		dat = __enc28j60_xfer(0xFF);
 	}
 	// release CS
-	// ENC28J60_CSH();
 	__enc28j60_cs_ctrl(false);
 
 	return dat;
@@ -70,15 +63,11 @@ unsigned char enc28j60ReadOp(unsigned char op, unsigned char address)
 void enc28j60WriteOp(unsigned char op, unsigned char address, unsigned char data)
 {
 	unsigned char dat = 0;								  	  
-	// ENC28J60_CSL();	                      //使能ENC28J60 SPI片选  		
 	__enc28j60_cs_ctrl(true);
 	dat = op | (address & ADDR_MASK);	  //OP--3位操作码 (address & ADDR_MASK)--5位参数
-	// SPI1_ReadWrite(dat);				  //SPI1 写
 	__enc28j60_xfer(dat);
 	dat = data;
-	// SPI1_ReadWrite(dat);				  //SPI1 写操作数据
 	__enc28j60_xfer(dat);
-	// ENC28J60_CSH();						  //禁止ENC28J60 SPI片选  完成操作
 	__enc28j60_cs_ctrl(false);
 }
 /****************************************************************************
@@ -91,21 +80,17 @@ void enc28j60WriteOp(unsigned char op, unsigned char address, unsigned char data
 ****************************************************************************/ 
 void enc28j60ReadBuffer(unsigned int len, unsigned char* data)
 {
-	// ENC28J60_CSL();
 	__enc28j60_cs_ctrl(true);
 	// 读命令
-	// SPI1_ReadWrite(ENC28J60_READ_BUF_MEM);
 	__enc28j60_xfer(ENC28J60_READ_BUF_MEM);
 	while(len)
 	{
         len--;
         // read data
-        // *data = (unsigned char)SPI1_ReadWrite(0);
 		*data = (unsigned char)__enc28j60_xfer(0);
         data++;
 	}
 	*data='\0';
-	// ENC28J60_CSH();
 	__enc28j60_cs_ctrl(false);
 }
 /****************************************************************************
@@ -118,20 +103,16 @@ void enc28j60ReadBuffer(unsigned int len, unsigned char* data)
 ****************************************************************************/ 
 void enc28j60WriteBuffer(unsigned int len, unsigned char* data)
 {
-	// ENC28J60_CSL();
 	__enc28j60_cs_ctrl(true);
 	// issue write command
-	// SPI1_ReadWrite(ENC28J60_WRITE_BUF_MEM);
 	__enc28j60_xfer(ENC28J60_WRITE_BUF_MEM);
 	
 	while(len)
 	{
 		len--;
-		// SPI1_ReadWrite(*data);
 		__enc28j60_xfer(*data);
 		data++;
 	}
-	// ENC28J60_CSH();
 	__enc28j60_cs_ctrl(false);
 }
 /****************************************************************************
@@ -224,7 +205,6 @@ void enc28j60clkout(unsigned char clk)
 ****************************************************************************/ 
 void enc28j60Init(unsigned char* macaddr)
 {
-	// ENC28J60_CSH();	                              //SPI1 ENC28J60片选禁止  
 	__enc28j60_cs_ctrl(false);
 	/* ENC28J60软件复位 
 	   系统命令（软件复位）（SC） 1 1 1 | 1 1 1 1 1    N/A */
@@ -367,12 +347,12 @@ void enc28j60Init(unsigned char* macaddr)
 	enc28j60Write(MAADR1, macaddr[4]);
 	enc28j60Write(MAADR0, macaddr[5]);
 	if(enc28j60Read(MAADR5)== macaddr[0]){
-		printk("MAADR5 = %02x\r\n", enc28j60Read(MAADR5));
-		printk("MAADR4 = %02x\r\n", enc28j60Read(MAADR4));
-		printk("MAADR3 = %02x\r\n", enc28j60Read(MAADR3));
-		printk("MAADR2 = %02x\r\n", enc28j60Read(MAADR2));
-		printk("MAADR1 = %02x\r\n", enc28j60Read(MAADR1));
-		printk("MAADR0 = %02x\r\n", enc28j60Read(MAADR0));
+		printk("MAADR5 = %02x\n", enc28j60Read(MAADR5));
+		printk("MAADR4 = %02x\n", enc28j60Read(MAADR4));
+		printk("MAADR3 = %02x\n", enc28j60Read(MAADR3));
+		printk("MAADR2 = %02x\n", enc28j60Read(MAADR2));
+		printk("MAADR1 = %02x\n", enc28j60Read(MAADR1));
+		printk("MAADR0 = %02x\n", enc28j60Read(MAADR0));
 	}
 	//配置PHY为全双工  LEDB为拉电流
 	enc28j60PhyWrite(PHCON1, PHCON1_PDPXMD);
@@ -530,6 +510,7 @@ unsigned int enc28j60PacketReceive(unsigned int maxlen, unsigned char* packet)
 
 void mymacinit(unsigned char *mymac)
 {
+	bsp_spi2_init();
     enc28j60Init(mymac);
   	enc28j60PhyWrite(PHLCON,0x0476);	
 	enc28j60clkout(2);                 // change clkout from 6.25MHz to 12.5MHz

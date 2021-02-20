@@ -36,8 +36,6 @@ extern void lwip_demo_task(void);
 int main(void)
 {
     cpu_config();
-    /* initialize hardware */
-    platform_hw_init();
     /* initialize platform code */
     platform_init();
     /* not return */

@@ -1,9 +1,9 @@
 /**
- * @file /config/CY000001/options.h
+ * @file driver/include/serial.h
  *
- * Copyright (C) 2020
+ * Copyright (C) 2021
  *
- * options.h is free software: you can redistribute it and/or modify
+ * serial.h is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -17,35 +17,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @author HinsShum hinsshum@qq.com
+ *
+ * @encoding utf-8
  */
-#ifndef __RSTF103ZET6_OPTIONS_H
-#define __RSTF103ZET6_OPTIONS_H
+#ifndef __SERIAL_H
+#define __SERIAL_H
 
 /*---------- includes ----------*/
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include "stm32f1xx_ll_conf.h"
-#include "cpu.h"
+#include <device.h>
 
 /*---------- macro ----------*/
-#undef assert
-#ifdef NDEBUG
-#define assert(expr)                            ((void)0U)
-#else
-#define assert(expr)                            do { if(!(expr)) { for(;;); }} while(0)
-#endif
-
-#define SYS_VERSION                             ("V1.00")
-#ifndef SYS_HARD_VERSION
-#define SYS_HARD_VERSION                        ("CY000001")
-#endif
-
-/* delay */
-#define __delay_ms(ms)                          mdelay(ms)
-#define __delay_us(us)                          udelay(us)
+#define IOCTL_SERIAL_GET_COMPORT                    (IOCTL_USER_START + 0x00)
+#define IOCTL_SERIAL_SET_IRQ_HANDLER                (IOCTL_USER_START + 0x01)
 
 /*---------- type define ----------*/
+typedef struct {
+    uint8_t comport;
+    bool (*init)(void);
+    void (*deinit)(void);
+    uint16_t (*write)(uint8_t *pbuf, uint16_t len);
+    int32_t (*irq_handler)(uint32_t irq_handler, void *args, uint32_t len);
+} serial_describe_t;
+
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-#endif /* __RSTF103ZET6_OPTIONS_H */
+#endif /* __SERIAL_H */

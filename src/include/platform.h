@@ -30,10 +30,17 @@
 
 /*---------- macro ----------*/
 /*---------- type define ----------*/
+typedef struct {
+    struct {
+        void *dev_printk;
+        void *dev_led0;
+    } handler;
+} platform_describe_t;
+
 /*---------- variable prototype ----------*/
+extern platform_describe_t g_platform;
+
 /*---------- function prototype ----------*/
-extern void platform_hw_init(void);
-extern void platform_hw_deinit(void);
 extern int32_t platform_init(void);
 
 #endif /* __PLATFORM_H */

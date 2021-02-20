@@ -32,7 +32,4 @@
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
-extern bool bsp_print_init(void);
-extern void bsp_print_deinit(void);
-
 #endif /* __BSP_PRINT_H */

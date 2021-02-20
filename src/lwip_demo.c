@@ -48,8 +48,8 @@ static void lwip_demo_task_init(void)
     struct ip_addr ip, netmask, gateway;
 
     lwip_init();
-    IP4_ADDR(&gateway, 192, 168, 1, 1);
-    IP4_ADDR(&ip, 192, 168, 1, 101);
+    IP4_ADDR(&gateway, 192, 168, 0, 1);
+    IP4_ADDR(&ip, 192, 168, 0, 120);
     IP4_ADDR(&netmask, 255, 255, 255, 0);
     netif_add(&enc28j60_netif, &ip, &netmask, &gateway, NULL,
               ethernetif_init, ethernet_input);

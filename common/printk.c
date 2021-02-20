@@ -73,7 +73,11 @@
 #define LOG_BUF(index)      (log_buf[(index) & LOG_BUF_MASK])
 
 /*---------- variables ----------*/
-struct con console_driver;
+struct con {
+    unsigned int (*write)(const char *, unsigned int);
+    bool (*getc)(char *);
+};
+static struct con console_driver;
 
 int console_printk[] = {
     DEFAULT_CONSOLE_LOGLEVEL,   /* console_loglevel */
@@ -872,10 +876,11 @@ static void task_syslog(void *pvParameters)
  *
  * retval: true: console can use, false: console can not use
  */
-bool console_driver_init(void)
+bool console_driver_init(unsigned int (*write)(const char *, unsigned int))
 {
     bool retval = true;
 
+    console_driver.write = write;
 #if PRINTK_LOCK_ENABLE
     /**
      * use FreeRTOS as kernel os
@@ -900,6 +905,4 @@ bool console_driver_init(void)
 
     return retval;
 }
-
 #endif
-

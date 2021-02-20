@@ -24,7 +24,7 @@
 /*---------- includes ----------*/
 #include "bsp_print.h"
 #include "stm32f1xx_ll_conf.h"
-#include "printk.h"
+#include "serial.h"
 
 /*---------- macro ----------*/
 #define _BSP_TX_PORT                (GPIOA)
@@ -34,11 +34,22 @@
 #define _BSP_UART                   (USART1)
 
 /*---------- variable prototype ----------*/
-extern struct con console_driver;
-
 /*---------- function prototype ----------*/
+static bool bsp_print_init(void);
+static void bsp_print_deinit(void);
+static uint16_t bsp_print_puts(uint8_t *s, uint16_t len);
+
 /*---------- type define ----------*/
 /*---------- variable ----------*/
+static serial_describe_t print = {
+    .comport = 1,
+    .init = bsp_print_init,
+    .deinit = bsp_print_deinit,
+    .write = bsp_print_puts,
+    .irq_handler = NULL
+};
+DEVICE_DEFINED(print, serial, &print);
+
 /*---------- function ----------*/
 static void bsp_print_io_init(void)
 {
@@ -82,7 +93,7 @@ static void bsp_print_putc(char ch)
     while(SET != LL_USART_IsActiveFlag_TC(_BSP_UART));
 }
 
-static unsigned int bsp_print_puts(const char *s, unsigned int len)
+static uint16_t bsp_print_puts(uint8_t *s, uint16_t len)
 {
     uint32_t i = 0;
 
@@ -93,24 +104,15 @@ static unsigned int bsp_print_puts(const char *s, unsigned int len)
     return i;
 }
 
-static void bsp_print_register(void)
-{
-    console_driver.getc = NULL;
-    console_driver.write = bsp_print_puts;
-}
-
-bool bsp_print_init(void)
+static bool bsp_print_init(void)
 {
     bsp_print_io_init();
     bsp_print_reg_init();
-    bsp_print_register();
 
     return true;
 }
 
-void bsp_print_deinit(void)
+static void bsp_print_deinit(void)
 {
-    console_driver.getc = NULL;
-    console_driver.write = NULL;
     LL_USART_DeInit(_BSP_UART);
 }
