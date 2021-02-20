@@ -6,7 +6,7 @@
 #        which is the required name of the file CMake looks for:
 cmake_minimum_required(VERSION 3.1)
 
-if("${BOARD_NAME}" STREQUAL "CY000001")
+if("${BOARD_NAME}" STREQUAL "cy000001")
     file(GLOB FILES "*.c")
     file(GLOB ASM_FILES "${CMAKE_CURRENT_SOURCE_DIR}/gcc/*.s")
 

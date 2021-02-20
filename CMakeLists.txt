@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.1)
 if(NOT DEFINED BOARD_NAME)
     message(FATAL_ERROR "Please input the board name, eg: -DBOARD_NAME=XXXXX")
 else()
-    execute_process(COMMAND ls "bsp" OUTPUT_VARIABLE ALL_BOARD)
+    execute_process(COMMAND cat "support_board.cfg" OUTPUT_VARIABLE ALL_BOARD)
     string(REPLACE "\n" ";" ALL_BOARD "${ALL_BOARD}")
     foreach(BOARD ${ALL_BOARD})
         if("${BOARD_NAME}" STREQUAL "${BOARD}")
@@ -57,8 +57,6 @@ function(DIRNAME INPUT OUTPUT)
 endfunction(DIRNAME)
 
 # set global include directory
-# file(GLOB_RECURSE INCLUDES "*.h")
-# dirname(INCLUDES G_SOURCE_INCLUDE_DIRS)
 set(G_SOURCE_INCLUDE_DIRS ${G_SOURCE_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
 
 #set target c file pathname
@@ -67,16 +65,17 @@ set(C_SOURCE_FILES)
 set(C_SOURCE_LIBS)
 
 # add sub directory
-if("${BOARD_NAME}" STREQUAL "CY000001")
+if("${BOARD_NAME}" STREQUAL "cy000001")
     add_subdirectory(arch/stm32f103xx)
-    add_subdirectory(bsp/CY000001)
+    add_subdirectory(bsp/cy000001)
     add_subdirectory(common)
     add_subdirectory(lib/st/stm32f1xx/STM32F1xx_HAL_Driver/Src)
 endif()
 add_subdirectory(components/lwip)
 add_subdirectory(driver)
 add_subdirectory(src)
-# add_subdirectory(utils)
+
+add_definitions(-DCONFIG_OPTIONS_FILE="config/${BOARD_NAME}/options.h")
 
 # tell cmake asm file also is c file
 set_property(SOURCE ${C_SOURCE_FILES} PROPERTY LANGUAGE C)
@@ -86,17 +85,21 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE "${G_SOURCE_INCLUDE_DIRS}
 
 target_link_libraries(${PROJECT_NAME}.elf PUBLIC ${C_SOURCE_LIBS})
 
-# binary
-set(ELF_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.elf)
-set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
-set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
+if(NOT "${BOARD_NAME}" STREQUAL "linux" AND NOT "${BOARD_NAME}" STREQUAL "win32")
+    # binary
+    set(ELF_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.elf)
+    set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
+    set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
 
-add_custom_command(TARGET "${PROJECT_NAME}.elf" POST_BUILD
-                   COMMAND ${CMAKE_OBJCOPY} -Obinary ${ELF_FILE} ${BIN_FILE}
-                   COMMAND ${CMAKE_OBJCOPY} -Oihex  ${ELF_FILE} ${HEX_FILE}
-                   COMMENT "Building ${PROJECT_NAME}.bin and ${PROJECT_NAME}.hex"
-                   COMMAND ${CMAKE_COMMAND} -E copy ${HEX_FILE} "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.hex"
-                   COMMAND ${CMAKE_COMMAND} -E copy ${BIN_FILE} "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.bin"
-                   COMMAND ${CMAKE_SIZE} --format=berkeley ${PROJECT_NAME}.elf ${PROJECT_NAME}.hex
-                   COMMENT "Invoking: Cross ARM GNU Print Size"
-)
+    add_custom_command(TARGET "${PROJECT_NAME}.elf" POST_BUILD
+                    COMMAND ${CMAKE_OBJCOPY} -Obinary ${ELF_FILE} ${BIN_FILE}
+                    COMMAND ${CMAKE_OBJCOPY} -Oihex  ${ELF_FILE} ${HEX_FILE}
+                    COMMENT "Building ${PROJECT_NAME}.bin and ${PROJECT_NAME}.hex"
+                    COMMAND ${CMAKE_COMMAND} -E copy ${HEX_FILE} "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.hex"
+                    COMMAND ${CMAKE_COMMAND} -E copy ${BIN_FILE} "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.bin"
+                    COMMAND ${CMAKE_SIZE} --format=berkeley ${PROJECT_NAME}.elf ${PROJECT_NAME}.hex
+                    COMMENT "Invoking: Cross ARM GNU Print Size"
+    )
+else()
+    set(CMAKE_EXE_LINKER_FLAGS "-Wl,-Map,${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map,--cref")
+endif()

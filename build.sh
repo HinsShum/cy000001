@@ -3,7 +3,11 @@
 
 function build()
 {
-    cmake -B build -G "Unix Makefiles" -DBOARD_NAME=$board_name -DCMAKE_TOOLCHAIN_FILE=${board_name}_toolchain.cmake -DCMAKE_BUILD_TYPE=$build_type
+    if [ "$board_name" == "linux" -o "$board_name" == "win32" ]; then
+        cmake -B build -G "Unix Makefiles" -DBOARD_NAME=$board_name -DCMAKE_BUILD_TYPE=$build_type
+    else
+        cmake -B build -G "Unix Makefiles" -DBOARD_NAME=$board_name -DCMAKE_TOOLCHAIN_FILE=${board_name}_toolchain.cmake -DCMAKE_BUILD_TYPE=$build_type
+    fi
 }
 
 function compile()
@@ -70,7 +74,7 @@ clear=0
 build_type=Debug
 download=0
 erase=0
-support_board=("CY000001_0x08005000_0x08080000_STM32F103ZE")
+support_board=("cy000001_0x08005000_0x08080000_STM32F103ZE")
 find_board=0
 
 while [ $# -gt 0 ]; do
@@ -96,6 +100,10 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+if [ $clear -gt 0 ]; then
+    clear_build
+fi
+
 if [ -n "$board_name" ]; then
     for loop in ${support_board[*]}
     do
@@ -114,10 +122,17 @@ if [ -n "$board_name" ]; then
     fi
 fi
 
+if [ "$board_name" == "linux" -o "$board_name" == "win32" ]; then
+    download=0
+    erase=0
+fi
+
 if [ $build -gt 0 ]; then
     if [ -n "$board_name" ]; then
         build
-        generate_flash_jlink
+        if [ "$board_name" != "linux" -a "$board_name" != "win32" ]; then
+            generate_flash_jlink
+        fi
     else
         echo "Please input the board name that you want to compile"
         exit 0
@@ -134,10 +149,6 @@ fi
 
 if [ $erase -gt 0 ]; then
     erase_bin
-fi
-
-if [ $clear -gt 0 ]; then
-    clear_build
 fi
 
 exit 0

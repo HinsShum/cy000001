@@ -18,7 +18,7 @@ set(CMAKE_SIZE "${CROSS_COMPILER_DIR}arm-none-eabi-size")
 
 # set definitions
 add_definitions(-DSTM32F103xE -DUSE_FULL_LL_DRIVER -DUSE_HAL_DRIVER)
-add_definitions(-DFLASH_TYPE_ONE -DHSE_VALUE=8000000 -DPLAT_CY000001 -DCONFIG_PRINTK)
+add_definitions(-DFLASH_TYPE_ONE -DHSE_VALUE=8000000 -DCONFIG_PRINTK)
 
 # set compiler flags
 set(MCU_FLAGS "-mcpu=cortex-m3 -mthumb")
