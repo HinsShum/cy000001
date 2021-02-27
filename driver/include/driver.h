@@ -40,7 +40,7 @@
         (type *)((char *)ptr - offsetof(type, member)))
 
 #define DRIVER_DEFINED(name, open, close, write, read, ioctl, irq_handler) \
-        static driver_t driver_##name __attribute__((used, section(_DEV_SECTION_PREFIX "drv_defined"))) \
+        driver_t driver_##name __attribute__((used, section(_DEV_SECTION_PREFIX "drv_defined"))) \
         __attribute__((aligned(4))) = {#name, open, close, write, read, ioctl, irq_handler}
 
 /*---------- type define ----------*/

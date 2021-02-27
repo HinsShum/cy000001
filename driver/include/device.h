@@ -52,7 +52,7 @@
 #define __device_attrib_setstart(attrib, start) (attrib = (attrib & (~0x0F)) | start)
 
 #define DEVICE_DEFINED(dev_name, drv_name, desc) \
-        static device_t device_##dev_name __attribute__((used, section(_DEV_SECTION_PREFIX "dev_defined"))) \
+        device_t device_##dev_name __attribute__((used, section(_DEV_SECTION_PREFIX "dev_defined"))) \
         __attribute__((aligned(4))) = {#dev_name, #drv_name, 0, 0, NULL, desc}
 
 /*---------- type define ----------*/
