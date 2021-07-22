@@ -115,6 +115,8 @@ void cpu_config()
     while(true != LL_APB2_GRP1_IsEnabledClock(LL_APB2_GRP1_PERIPH_AFIO));
     /* initialize systick */
     systick_config();
+    /* enable global irq */
+    __enable_irq();
 }
 
 void cpu_restore(void)

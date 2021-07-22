@@ -31,7 +31,7 @@ function generate_flash_jlink()
     fi
     rm build/download.* -f
     rm build/erase.* -f
-    echo -e "si SWD\nspeed 4000\nr\nh\nloadbin build/${board_name}.bin,${load_start_address}\nr\nexit" > build/download.jlink
+    echo -e "si SWD\nspeed 4000\nr\nh\nloadbin build/${program_name}.bin,${load_start_address}\nr\nexit" > build/download.jlink
     echo "${jlink} -Device ${device} -If SWD -Speed 4000 -JTAGConf -1,-1 -autoconnect 1 -CommanderScript build/download.jlink" > build/download.sh
     echo -e "si SWD\nspeed 4000\nr\nh\nerase ${load_start_address} ${load_end_address}\nexit" > build/erase.jlink
     echo "${jlink} -Device ${device} -If SWD -Speed 4000 -JTAGConf -1,-1 -autoconnect 1 -CommanderScript build/erase.jlink" > build/erase.sh
@@ -72,6 +72,7 @@ build=0
 compile=0
 clear=0
 build_type=Debug
+program_name=demo
 download=0
 erase=0
 support_board=("cy000001_0x08005000_0x08080000_STM32F103ZE")
