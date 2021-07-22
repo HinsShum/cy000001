@@ -154,8 +154,3 @@ uint32_t HAL_GetTick(void)
 {
     return tick;
 }
-
-void systick_isr(void)
-{
-    HAL_IncTick();
-}

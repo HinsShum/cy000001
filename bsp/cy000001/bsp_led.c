@@ -46,16 +46,18 @@ static void bsp_led_ds1_deinit(void);
 
 /*---------- type define ----------*/
 /*---------- variable ----------*/
-static struct st_led_describe m_led_ds0 = {
-    .blink_time = 0,
+static led_describe_t m_led_ds0 = {
+    .cycle_time = 0,
+    .cycle_count = 0,
     .init = bsp_led_ds0_io_init,
     .deinit = bsp_led_ds0_deinit,
     .ctrl = bsp_led_ds0_ctrl,
     .toggle = bsp_led_ds0_toggle
 };
 DEVICE_DEFINED(led_ds0, led, &m_led_ds0);
-static struct st_led_describe m_led_ds1 = {
-    .blink_time = 0,
+static led_describe_t m_led_ds1 = {
+    .cycle_time = 0,
+    .cycle_count = 0,
     .init = bsp_led_ds1_io_init,
     .deinit = bsp_led_ds1_deinit,
     .ctrl = bsp_led_ds1_ctrl,

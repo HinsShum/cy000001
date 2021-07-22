@@ -23,6 +23,11 @@
 #ifndef __SERIAL_H
 #define __SERIAL_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /*---------- includes ----------*/
 #include <stdint.h>
 #include <stdbool.h>
@@ -32,16 +37,36 @@
 /*---------- macro ----------*/
 #define IOCTL_SERIAL_GET_COMPORT                    (IOCTL_USER_START + 0x00)
 #define IOCTL_SERIAL_SET_IRQ_HANDLER                (IOCTL_USER_START + 0x01)
+#define IOCTL_SERIAL_DIRECTION_CHOOSE               (IOCTL_USER_START + 0x02)
+#define IOCTL_SERIAL_GET_BAUDRATE                   (IOCTL_USER_START + 0x03)
+#define IOCTL_SERIAL_SET_BAUDRATE                   (IOCTL_USER_START + 0x04)
+
+/* Write automatically change dir flag 
+ */
+#define SERIAL_WIRTE_CHANGE_DIR_AUTOMATICALLY       (0x00)
+#define SERIAL_WIRTE_CHANGE_DIR_MANUAL              (0x01)
 
 /*---------- type define ----------*/
+typedef enum {
+    SERIAL_DIRECTION_TX,
+    SERIAL_DIRECTION_RX,
+    SERIAL_DIRECTION_NRX_NTX
+} serial_direction_en;
+
 typedef struct {
     uint8_t comport;
+    uint32_t baudrate;
     bool (*init)(void);
     void (*deinit)(void);
+    void (*dir_change)(serial_direction_en dir);
     uint16_t (*write)(uint8_t *pbuf, uint16_t len);
     int32_t (*irq_handler)(uint32_t irq_handler, void *args, uint32_t len);
 } serial_describe_t;
 
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
+
+#ifdef __cplusplus
+}
+#endif
 #endif /* __SERIAL_H */

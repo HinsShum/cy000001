@@ -27,6 +27,9 @@
 #include <stddef.h>
 
 /*---------- macro ----------*/
+#define tick_increase()                 HAL_IncTick()
+#define tick_get()                      HAL_GetTick()
+
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
@@ -86,12 +89,5 @@ extern void HAL_IncTick(void);
  * @retval tick value
  */
 extern uint32_t HAL_GetTick(void);
-
-/**
- * @brief systick interrupt service funtion
- *
- * @retval None
- */
-extern void systick_isr(void);
 
 #endif /* __CPU_H */

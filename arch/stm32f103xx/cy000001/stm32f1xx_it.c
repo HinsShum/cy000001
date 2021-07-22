@@ -107,16 +107,15 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-    systick_isr();
-    {
-        /* led ds0 as the sys led to indicate that the device is still alive */
-        uint32_t led_blink = 0;
-        if(g_platform.handler.dev_led0) {
-          device_ioctl(g_platform.handler.dev_led0, DEVICE_IOCTL_LED_GET_BLINK_TIME, &led_blink);
-          if(led_blink && !(HAL_GetTick() % led_blink)) {
-            device_ioctl(g_platform.handler.dev_led0, DEVICE_IOCTL_LED_TOGGLE, NULL);
-          }
-        }
+    led_cycle_t led = {0};
+    uint32_t ticks = 0;
+
+    tick_increase();
+    ticks = tick_get();
+    /* check led */
+    device_ioctl(g_platform.handler.dev_led0, IOCTL_LED_GET_CYCLE, &led);
+    if(led.cycle_time && led.cycle_count && !(ticks % led.cycle_time)) {
+        device_ioctl(g_platform.handler.dev_led0, IOCTL_LED_TOGGLE, NULL);
     }
 }
 

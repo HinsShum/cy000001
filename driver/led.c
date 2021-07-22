@@ -21,10 +21,9 @@
 
 /*---------- includes ----------*/
 #include "led.h"
-#include "config/errorno.h"
-#include "config/assert.h"
 #include "driver.h"
-#include "device.h"
+#include "config/errorno.h"
+#include "config/options.h"
 
 /*---------- macro ----------*/
 /*---------- variable prototype ----------*/
@@ -40,7 +39,7 @@ DRIVER_DEFINED(led, led_open, led_close, NULL, NULL, led_ioctl, NULL);
 /*---------- function ----------*/
 static int32_t led_open(driver_t **pdrv)
 {
-    struct st_led_describe *pdesc = NULL;
+    led_describe_t *pdesc = NULL;
     int32_t retval = CY_EOK;
 
     assert(pdrv);
@@ -48,53 +47,74 @@ static int32_t led_open(driver_t **pdrv)
     if(pdesc && pdesc->init) {
         pdesc->init();
     }
+    if(pdesc && pdesc->ctrl) {
+        pdesc->ctrl(false);
+    }
 
     return retval;
 }
 
 static void led_close(driver_t **pdrv)
 {
-    struct st_led_describe *pdesc = NULL;
+    led_describe_t *pdesc = NULL;
 
     assert(pdrv);
     pdesc = container_of(pdrv, device_t, pdrv)->pdesc;
     if(pdesc && pdesc->deinit) {
         pdesc->deinit();
     }
+    if(pdesc && pdesc->ctrl) {
+        pdesc->ctrl(false);
+    }
 }
 
 static int32_t led_ioctl(driver_t **pdrv, uint32_t cmd, void *arg)
 {
-    struct st_led_describe *pdesc = NULL;
+    led_describe_t *pdesc = NULL;
     int32_t retval = CY_EOK;
+    led_cycle_t *cycle = NULL;
 
     assert(pdrv);
 
     pdesc = container_of(pdrv, device_t, pdrv)->pdesc;
     switch(cmd) {
-        case DEVICE_IOCTL_LED_ON:
+        case IOCTL_LED_ON:
             if(pdesc->ctrl) {
                 pdesc->ctrl(true);
             }
             break;
-        case DEVICE_IOCTL_LED_OFF:
+        case IOCTL_LED_OFF:
             if(pdesc->ctrl) {
                 pdesc->ctrl(false);
+                pdesc->cycle_count = 0;
+                pdesc->cycle_time = 0;
             }
             break;
-        case DEVICE_IOCTL_LED_TOGGLE:
+        case IOCTL_LED_TOGGLE:
             if(pdesc->toggle) {
                 pdesc->toggle();
+                if(pdesc->cycle_count != 0 && pdesc->cycle_count != LED_CYCLE_COUNT_MAX) {
+                    pdesc->cycle_count--;
+                }
             }
             break;
-        case DEVICE_IOCTL_LED_SET_BLINK_TIME:
+        case IOCTL_LED_SET_CYCLE:
             if(arg) {
-                pdesc->blink_time = *(uint32_t *)arg;
+                cycle = (led_cycle_t *)arg;
+                pdesc->cycle_time = cycle->cycle_time;
+                pdesc->cycle_count = cycle->cycle_count;
             }
             break;
-        case DEVICE_IOCTL_LED_GET_BLINK_TIME:
+        case IOCTL_LED_GET_CYCLE:
             if(arg) {
-                *(uint32_t *)arg = pdesc->blink_time;
+                cycle = (led_cycle_t *)arg;
+                cycle->cycle_time = pdesc->cycle_time;
+                cycle->cycle_count = pdesc->cycle_count;
+            }
+            break;
+        case IOCTL_LED_GET_STATUS:
+            if(arg && pdesc && pdesc->get) {
+                *(bool *)arg = pdesc->get();
             }
             break;
         default:

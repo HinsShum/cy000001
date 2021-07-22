@@ -73,8 +73,14 @@ static int32_t serial_write(driver_t **pdrv, void *buf, uint32_t addition, uint3
 
     assert(pdrv);
     pdesc = container_of(pdrv, device_t, pdrv)->pdesc;
+    if(pdesc && pdesc->dir_change && addition == SERIAL_WIRTE_CHANGE_DIR_AUTOMATICALLY) {
+        pdesc->dir_change(SERIAL_DIRECTION_TX);
+    }
     if(pdesc && pdesc->write) {
         actual_len = pdesc->write((uint8_t *)buf, (uint16_t)len);
+    }
+    if(pdesc && pdesc->dir_change && addition == SERIAL_WIRTE_CHANGE_DIR_AUTOMATICALLY) {
+        pdesc->dir_change(SERIAL_DIRECTION_RX);
     }
 
     return (int32_t)actual_len;
@@ -96,6 +102,35 @@ static int32_t serial_ioctl(driver_t **pdrv, uint32_t cmd, void *args)
         case IOCTL_SERIAL_SET_IRQ_HANDLER:
             if(pdesc) {
                 pdesc->irq_handler = (int32_t (*)(uint32_t, void *, uint32_t))args;
+            }
+            break;
+        case IOCTL_SERIAL_DIRECTION_CHOOSE:
+            if(pdesc && pdesc->dir_change && args) {
+                serial_direction_en dir = *(serial_direction_en *)args;
+                if(dir > SERIAL_DIRECTION_NRX_NTX) {
+                    retval = CY_E_WRONG_ARGS;
+                } else {
+                    pdesc->dir_change(dir);
+                }
+            }
+            break;
+        case IOCTL_SERIAL_GET_BAUDRATE:
+            if(pdesc && args) {
+                *(uint32_t *)args = pdesc->baudrate;
+            }
+            break;
+        case IOCTL_SERIAL_SET_BAUDRATE:
+            if(pdesc && args) {
+                uint32_t baudrate = *(uint32_t *)args;
+                if(pdesc->baudrate != baudrate) {
+                    pdesc->baudrate = baudrate;
+                    if(pdesc->deinit) {
+                        pdesc->deinit();
+                    }
+                    if(pdesc->init) {
+                        retval = (pdesc->init() ? CY_EOK : CY_ERROR);
+                    }
+                }
             }
             break;
         default:

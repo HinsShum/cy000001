@@ -21,6 +21,11 @@
 #ifndef __LED_H
 #define __LED_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /*---------- includes ----------*/
 #include <stdint.h>
 #include <stdbool.h>
@@ -28,21 +33,35 @@
 #include "device.h"
 
 /*---------- macro ----------*/
-#define DEVICE_IOCTL_LED_ON             (IOCTL_USER_START + 0x00)
-#define DEVICE_IOCTL_LED_OFF            (IOCTL_USER_START + 0x01)
-#define DEVICE_IOCTL_LED_TOGGLE         (IOCTL_USER_START + 0x02)
-#define DEVICE_IOCTL_LED_SET_BLINK_TIME (IOCTL_USER_START + 0x03)
-#define DEVICE_IOCTL_LED_GET_BLINK_TIME (IOCTL_USER_START + 0x04)
+#define IOCTL_LED_ON                        (IOCTL_USER_START + 0x00)
+#define IOCTL_LED_OFF                       (IOCTL_USER_START + 0x01)
+#define IOCTL_LED_TOGGLE                    (IOCTL_USER_START + 0x02)
+#define IOCTL_LED_SET_CYCLE                 (IOCTL_USER_START + 0x03)
+#define IOCTL_LED_GET_CYCLE                 (IOCTL_USER_START + 0x04)
+#define IOCTL_LED_GET_STATUS                (IOCTL_USER_START + 0x05)
+
+#define LED_CYCLE_COUNT_MAX                 (0xFFFFFFFF)
 
 /*---------- type define ----------*/
-struct st_led_describe {
-    uint32_t blink_time; //! unit=ms
+typedef struct {
+    uint32_t cycle_time;
+    uint32_t cycle_count;
     void (*init)(void);
     void (*deinit)(void);
     void (*ctrl)(bool on);
     void (*toggle)(void);
-};
+    bool (*get)(void);
+} led_describe_t;
+
+typedef struct {
+    uint32_t cycle_time;
+    uint32_t cycle_count;
+} led_cycle_t;
 
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
+
+#ifdef __cplusplus
+}
+#endif
 #endif /* __LED_H */

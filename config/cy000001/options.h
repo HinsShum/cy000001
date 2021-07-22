@@ -27,6 +27,7 @@
 #include <stddef.h>
 #include "stm32f1xx_ll_conf.h"
 #include "cpu.h"
+#include "version.h"
 
 /*---------- macro ----------*/
 #undef assert
@@ -36,16 +37,29 @@
 #define assert(expr)                            do { if(!(expr)) { for(;;); }} while(0)
 #endif
 
-#define SYS_VERSION                             ("V1.00")
-#ifndef SYS_HARD_VERSION
-#define SYS_HARD_VERSION                        ("CY000001")
-#endif
+/* format to string
+ */
+#define _STRING(x)                              #x              /*<< only format alphabet as string */
+#define STRING(x)                               _STRING(x)      /*<< format alphabet or digit as string */
+
+/* system variables defined
+ */
+#define SYS_VERSION                             ((VERSION_MAJOR << 24) | (VERSION_MINOR << 16) | (VERSION_FIX << 8) | VERSION_BUILD)
+#define SYS_VERSION_STRING                      (STRING(VERSION_MAJOR)"."STRING(VERSION_MINOR)"."STRING(VERSION_FIX)"."STRING(VERSION_BUILD))
+#define SYS_MODEL_NAME                          ("CY000001")
+#define SYS_HW_VERSION                          ((HW_VERSION_MAJOR << 8) | HW_VERSION_MINOR)
+#define SYS_PRODUCT_TIME                        (__DATE__)
 
 /* delay */
 #define __delay_ms(ms)                          mdelay(ms)
 #define __delay_us(us)                          udelay(us)
+#define __get_ticks()                           tick_get()
+#define MS2TICKS(ms)                            (ms)
 
 /*---------- type define ----------*/
 /*---------- variable prototype ----------*/
 /*---------- function prototype ----------*/
+extern void mdelay(uint32_t delay);
+extern void udelay(uint32_t us);
+
 #endif /* __RSTF103ZET6_OPTIONS_H */

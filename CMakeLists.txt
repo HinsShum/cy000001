@@ -22,8 +22,13 @@ else()
     endif()    
 endif()
 
+# check program name
+if("${PROGRAM_NAME}" STREQUAL "")
+    set(PROGRAM_NAME "demo")
+endif()
+
 # set project describe information
-project(CY000001 VERSION 1.0.0 DESCRIPTION "A demo CMake project" LANGUAGES C)
+project(${PROGRAM_NAME} VERSION 1.0.0 DESCRIPTION "A demo CMake project" LANGUAGES C)
 
 # display project describe information
 message("Project name: ${PROJECT_NAME}")
@@ -63,6 +68,8 @@ set(G_SOURCE_INCLUDE_DIRS ${G_SOURCE_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
 set(C_SOURCE_FILES)
 # set project lib
 set(C_SOURCE_LIBS)
+# add macros
+add_definitions(-DCONFIG_OPTIONS_FILE="config/${BOARD_NAME}/options.h")
 
 # add sub directory
 if("${BOARD_NAME}" STREQUAL "cy000001")
@@ -74,8 +81,6 @@ endif()
 add_subdirectory(components/lwip)
 add_subdirectory(driver)
 add_subdirectory(src)
-
-add_definitions(-DCONFIG_OPTIONS_FILE="config/${BOARD_NAME}/options.h")
 
 # tell cmake asm file also is c file
 set_property(SOURCE ${C_SOURCE_FILES} PROPERTY LANGUAGE C)

@@ -4,9 +4,9 @@
 function build()
 {
     if [ "$board_name" == "linux" -o "$board_name" == "win32" ]; then
-        cmake -B build -G "Unix Makefiles" -DBOARD_NAME=$board_name -DCMAKE_BUILD_TYPE=$build_type
+        cmake -B build -G "Unix Makefiles" -DBOARD_NAME=$board_name -DPROGRAM_NAME=$program_name -DCMAKE_BUILD_TYPE=$build_type
     else
-        cmake -B build -G "Unix Makefiles" -DBOARD_NAME=$board_name -DCMAKE_TOOLCHAIN_FILE=${board_name}_toolchain.cmake -DCMAKE_BUILD_TYPE=$build_type
+        cmake -B build -G "Unix Makefiles" -DBOARD_NAME=$board_name -DPROGRAM_NAME=$program_name -DCMAKE_TOOLCHAIN_FILE=${board_name}_toolchain.cmake -DCMAKE_BUILD_TYPE=$build_type
     fi
 }
 
@@ -56,11 +56,11 @@ function help_info()
     echo "./build.sh [options]"
     echo ""
     echo "options"
-    echo "  -[B|b] --name=<board name> --[debug|release]    = build the project by board name"
-    echo "  -[C|c]                                          = compile the project"
-    echo "  -[R|r]                                          = clear the target and the project directory"
-    echo "  --download                                      = download bin file to the device"
-    echo "  --erase                                         = erase flash on the device"
+    echo "  -[B|b] --plat=<board name> --name=<program name> --[debug|release]  = build the project by board name"
+    echo "  -[C|c]                                                              = compile the project"
+    echo "  -[R|r]                                                              = clear the target and the project directory"
+    echo "  --download                                                          = download bin file to the device"
+    echo "  --erase                                                             = erase flash on the device"
 }
 
 if [ $# -eq 0 ]; then
@@ -84,8 +84,10 @@ while [ $# -gt 0 ]; do
         compile=1
     elif [ $( expr $1 : '-[R|r]' ) -gt 0 ]; then
         clear=1
+    elif [ $( expr $1 : '--plat=[a-z|A-Z|0-9]\{1,\}' ) -gt 0 ]; then
+        board_name=$( expr $1 : '--plat=\([a-z|A-Z|0-9]\{1,\}\)' )
     elif [ $( expr $1 : '--name=[a-z|A-Z|0-9]\{1,\}' ) -gt 0 ]; then
-        board_name=$( expr $1 : '--name=\([a-z|A-Z|0-9]\{1,\}\)' )
+        program_name=$( expr $1 : '--name=\([a-z|A-Z|0-9]\{1,\}\)' )
     elif [ $( expr $1 : '--release' ) -gt 0 ]; then
         build_type=Release
     elif [ $( expr $1 : '--debug' ) -gt 0 ]; then

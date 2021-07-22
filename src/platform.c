@@ -62,7 +62,12 @@ static void platform_sayhello(void)
 
 static int32_t platform_misc_init(void)
 {
+    led_cycle_t led = {0};
+
     platform_sayhello();
+    led.cycle_count = LED_CYCLE_COUNT_MAX;
+    led.cycle_time = 500;
+    device_ioctl(g_platform.handler.dev_led0, IOCTL_LED_SET_CYCLE, &led);
 
     return CY_EOK;
 }
@@ -76,15 +81,11 @@ static int32_t platform_driver_init(void)
 {
     driver_search_device();
 
-    /* set ds0 led blinking every 500ms */
-    {
-        uint32_t led_blink = 500;
-        g_platform.handler.dev_led0 = device_open("led_ds0");
-        assert(g_platform.handler.dev_led0);
-        device_ioctl(g_platform.handler.dev_led0, DEVICE_IOCTL_LED_SET_BLINK_TIME, (void *)&led_blink);
-    }
-    /* open print device */
+    /* open devices */
+    g_platform.handler.dev_led0 = device_open("led_ds0");
     g_platform.handler.dev_printk = device_open("print");
+    /* assert device's handler */
+    assert(g_platform.handler.dev_led0);
     assert(g_platform.handler.dev_printk);
     /* initialize console */
     console_driver_init(platform_low_level_printk);
